@@ -1,5 +1,7 @@
 # The Digital Mammography DREAM Challenge
 
+https://www.synapse.org/#!Synapse:syn4224222/wiki/401759
+
 > Out of every 1000 women screened, only 5 will have breast cancer (0.5%). But 100 (10%) will be recalled for further testing
 
 ## Challenge
@@ -69,7 +71,6 @@ Your trainable model is submitted in the form of a Docker image  https://docs.do
 > You are allotted **336 hours (14 days)** of server time **in each five week** challenge round for preprocessing data and/or training models for scoring
 
 ## Programming references
-* Docker python submission example https://github.com/brucehoff/dm-python-example
-* Reading DICOM using python https://www.quora.com/How-can-I-read-a-DICOM-image-in-Python
-* Reading DICOM using python (2) https://pyscience.wordpress.com/2014/09/08/dicom-in-python-importing-medical-image-data-into-numpy-with-pydicom-and-vtk/
+* Python PyDICOM http://pydicom.readthedocs.io/en/stable/pydicom_user_guide.html
 * Example of machine learning with DICOM (ID3 and SVM) https://github.com/slowvak/MachineLearningForMedicalImages
+* Docker python submission example https://github.com/brucehoff/dm-python-example
