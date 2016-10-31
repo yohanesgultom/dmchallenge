@@ -77,7 +77,8 @@ data = []
 bar = progressbar.ProgressBar(max_value=len(filenames))
 for i, dcm_filename in enumerate(filenames):
     dcm = dicom.read_file(os.path.join(dcm_dir, dcm_filename))
-    data.append(center_crop_resize(dcm.pixel_array))
+    m = center_crop_resize(dcm.pixel_array)
+    data.append(np.array([m, m, m]))  # mimic 3 channel
     bar.update(i)
 bar.finish()
 x = np.array(data)
