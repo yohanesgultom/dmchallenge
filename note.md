@@ -74,3 +74,8 @@ Your trainable model is submitted in the form of a Docker image  https://docs.do
 * Python PyDICOM http://pydicom.readthedocs.io/en/stable/pydicom_user_guide.html
 * Example of machine learning with DICOM (ID3 and SVM) https://github.com/slowvak/MachineLearningForMedicalImages
 * Docker python submission example https://github.com/brucehoff/dm-python-example
+* Transfer learning using Keras VGG-16 https://github.com/fchollet/keras/issues/1728#issuecomment-184879068
+* Convnet https://blog.keras.io/how-convolutional-neural-networks-see-the-world.html
+* Convnet(2) http://cs231n.github.io/convolutional-networks/
+
+
