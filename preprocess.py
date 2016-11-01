@@ -1,3 +1,8 @@
+'''
+Build DM dataset
+Usage: python preprocess.py <DM images directory> <DM crosswalk file> <output file>
+
+'''
 import dicom
 import os
 import numpy
@@ -9,7 +14,7 @@ import scipy.ndimage.interpolation
 import progressbar
 
 # expected width/length (assumed square)
-EXPECTED_SIZE = 300
+EXPECTED_SIZE = 224
 MAX_VALUE = 4095
 
 
@@ -31,7 +36,7 @@ def center_crop_resize(dat):
     # print(resized)
     # print(norm)
     # # render image
-    # images = [cropped, resized, norm]
+    # images = [norm]
     # fig = pylab.figure()
     # for i, m in enumerate(images):
     #     fig.add_subplot(len(images), 1, i + 1)
