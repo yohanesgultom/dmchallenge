@@ -16,7 +16,7 @@ from sklearn.cross_validation import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 5
+BATCH_SIZE = 10
 NB_EPOCH = 5
 
 
