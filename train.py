@@ -92,7 +92,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
 
 # setup model
 print('Preparing model')
-model = VGG_16('vgg16_weights.h5', X[0].shape)
+model = VGG_16('../vgg16_weights.h5', X[0].shape)
 
 # training model
 print('Training model')
