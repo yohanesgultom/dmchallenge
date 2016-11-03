@@ -15,6 +15,8 @@ from keras.optimizers import SGD
 from sklearn.cross_validation import train_test_split
 from datetime import datetime
 
+VGG16 = 'vgg16_weights.h5'
+
 # training parameters
 BATCH_SIZE = 10
 NB_EPOCH = 5
@@ -92,7 +94,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
 
 # setup model
 print('Preparing model')
-model = VGG_16('../vgg16_weights.h5', X[0].shape)
+model = VGG_16(VGG16, X[0].shape)
 
 # training model
 print('Training model')
