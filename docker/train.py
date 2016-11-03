@@ -1,7 +1,7 @@
 '''
 Train DM Challenge classifier
 GPU run command:
-    THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python train.py <dataset.npz>
+    THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python train.py <dataset.npz> <trained_model.h5>
 
 '''
 from __future__ import print_function
@@ -16,6 +16,7 @@ from sklearn.cross_validation import train_test_split
 from datetime import datetime
 
 VGG16 = 'vgg16_weights.h5'
+MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 # training parameters
 BATCH_SIZE = 10
@@ -82,6 +83,7 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
 
 # command line arguments
 dataset_file = sys.argv[1]
+model_file = sys.argv[2] if len(sys.argv) > 2 else MODEL_PATH
 
 # loading dataset
 print('Loading dataset')
@@ -106,4 +108,4 @@ model.fit(X_train, Y_train,
 
 # saving model
 print('Saving model')
-model.save('model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S')))
+model.save(model_file)

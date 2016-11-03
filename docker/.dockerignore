@@ -1,5 +1,3 @@
-!vgg16_weights.h5
-build.sh
 *.npz
-*.h5
 *.tsv
+model*.h5

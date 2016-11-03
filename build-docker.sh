@@ -9,7 +9,7 @@ image="${dockerurl}/${synapseid}/${modelname}"
 cd docker &&
 docker build -t ${image} . &&
 if [ $# -gt 0 ] && [ "$1" = --submit ]; then
-    # docker login ${dockerurl}
-    # docker push ${image}
+    docker login ${dockerurl}
+    docker push ${image}
 fi
 cd ..

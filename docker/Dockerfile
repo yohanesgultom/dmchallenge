@@ -19,13 +19,15 @@ RUN conda install -y \
     h5py \
     pandas \
     theano \
+  && conda install -y -c menpo opencv \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade -I setuptools \
-  && pip install --upgrade \
-    keras \
+  && pip install --upgrade keras \
+  && pip install --upgrade pydicom \
+  && pip install --upgrade progressbar
 
-COPY vgg16_weights.h5 /vgg16_weights.h5
 COPY train.py /train.py
 COPY train.sh /train.sh
 COPY test.sh /test.sh
 COPY preprocess.sh /preprocess.sh
+COPY vgg16_weights.h5 /vgg16_weights.h5
