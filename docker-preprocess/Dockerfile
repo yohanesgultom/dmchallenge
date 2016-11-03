@@ -1,3 +1,5 @@
+# Docker image for preprocessing
+
 FROM ubuntu
 
 RUN apt-get update \
@@ -16,18 +18,12 @@ RUN curl -qsSLkO \
 ENV PATH=/root/miniconda2/bin:$PATH
 
 RUN conda install -y \
-    h5py \
     pandas \
-    theano \
   && conda install -y -c menpo opencv \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade -I setuptools \
-  && pip install --upgrade keras \
   && pip install --upgrade pydicom \
   && pip install --upgrade progressbar
 
-COPY train.py /train.py
-COPY train.sh /train.sh
-COPY test.sh /test.sh
+COPY preprocess.py /preprocess.py
 COPY preprocess.sh /preprocess.sh
-COPY vgg16_weights.h5 /vgg16_weights.h5

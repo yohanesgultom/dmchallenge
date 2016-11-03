@@ -7,7 +7,6 @@ GPU run command:
 from __future__ import print_function
 import numpy as np
 import sys
-import cv2
 from keras.models import Sequential
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
