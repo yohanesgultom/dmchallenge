@@ -1,6 +1,6 @@
 #!/bin/sh
 
-preprocessname="simple-preprocess"
+preprocessname="mik2015-simple-preprocess"
 synapseid="syn4224222"
 dockerurl="docker.synapse.org"
 preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"

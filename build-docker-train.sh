@@ -1,6 +1,6 @@
 #!/bin/sh
 
-trainname="simple-cnn-vgg16"
+trainname="mik2015-simple-cnn-vgg16"
 synapseid="syn4224222"
 dockerurl="docker.synapse.org"
 trainimage="${dockerurl}/${synapseid}/${trainname}"
