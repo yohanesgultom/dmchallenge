@@ -20,13 +20,12 @@ ENV PATH=/root/miniconda2/bin:$PATH
 RUN conda install -y \
     h5py \
     pandas \
+    scikit-learn \
     theano \
   && conda clean --yes --tarballs --packages --source-cache \
+  && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
-  && pip install --upgrade keras \
-  && pip install --upgrade pydicom \
-  && pip install --upgrade matplotlib \  
-  && pip install --upgrade progressbar
+  && pip install --upgrade keras
 
 COPY train.py /train.py
 COPY train.sh /train.sh

@@ -8,7 +8,7 @@ import os
 import numpy
 import sys
 import numpy as np
-import pylab
+# import pylab
 import csv
 import scipy.ndimage.interpolation
 import progressbar
@@ -79,7 +79,7 @@ with open(crosswalk_file, 'rb') as tsvin:
 
 # read dicom images
 data = []
-bar = progressbar.ProgressBar(max_value=len(filenames))
+bar = progressbar.ProgressBar(maxval=len(filenames)).start()
 for i, dcm_filename in enumerate(filenames):
     dcm = dicom.read_file(os.path.join(dcm_dir, dcm_filename))
     m = center_crop_resize(dcm.pixel_array)

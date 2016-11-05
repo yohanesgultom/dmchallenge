@@ -19,11 +19,12 @@ ENV PATH=/root/miniconda2/bin:$PATH
 
 RUN conda install -y \
     pandas \
-  && conda install -y -c menpo opencv \
+    scipy \
+    opencv \
   && conda clean --yes --tarballs --packages --source-cache \
+  && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
   && pip install --upgrade pydicom \
-  && pip install --upgrade matplotlib \
   && pip install --upgrade progressbar
 
 COPY preprocess.py /preprocess.py
