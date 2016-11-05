@@ -1,3 +1,17 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
+# The following volumes are mounted when the preprocessing container is run:
+# - /trainingData (RO)
+# - /metadata (RO)
+# - /preprocessedData (RW)
+# furthermore, /metadata contains the following files:
+# - /metadata/exams_metadata.tsv
+# - /metadata/images_crosswalk.tsv
+
+# display host specs
+echo $(nproc) CPUs available.
+echo $(free -m)
+echo $(nvidia-smi)
+
+# generate keras-compatible dataset
 python preprocess.py "/trainingData" "/metadata/images_crosswalk.tsv" "/preprocessedData/dataset.npz"

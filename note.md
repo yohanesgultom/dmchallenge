@@ -70,12 +70,29 @@ Your trainable model is submitted in the form of a Docker image  https://docs.do
 
 > You are allotted **336 hours (14 days)** of server time **in each five week** challenge round for preprocessing data and/or training models for scoring
 
-## Programming references
+## Technical references
 * Python PyDICOM http://pydicom.readthedocs.io/en/stable/pydicom_user_guide.html
 * Example of machine learning with DICOM (ID3 and SVM) https://github.com/slowvak/MachineLearningForMedicalImages
-* Docker python submission example https://github.com/brucehoff/dm-python-example
 * Transfer learning using Keras VGG-16 https://github.com/fchollet/keras/issues/1728#issuecomment-184879068
 * Convnet https://blog.keras.io/how-convolutional-neural-networks-see-the-world.html
 * Convnet(2) http://cs231n.github.io/convolutional-networks/
+* Docker cheatsheet https://github.com/wsargent/docker-cheat-sheet
+* Docker volume http://container-solutions.com/understanding-volumes-docker/
+* Docker submission for DM examples https://github.com/aur-dream/dm-caffe-example
 
 
+## Running using Docker
+
+This running script is made to mimic behaviour in synapse.org environment
+
+> Replace paths started with `~/dmchallenge` with your own directory
+
+```
+sudo docker run -it --rm --name preprocess \
+    -v ~/dmchallenge/pilot_images:/trainingData:ro \
+    -v ~/dmchallenge/images_crosswalk_pilot_20160906.tsv:/metadata/images_crosswalk.tsv:ro \
+    -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \
+    -v ~/dmchallenge/preprocessed:/preprocessedData:rw \
+    docker.synapse.org/syn4224222/mik2015-simple-preprocess \
+    /bin/bash preprocess.sh
+```

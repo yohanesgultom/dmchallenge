@@ -36,7 +36,7 @@ def center_crop_resize(dat):
     # print(resized)
     # print(norm)
     # # render image
-    # images = [norm]
+    # images = [dat, norm]
     # fig = pylab.figure()
     # for i, m in enumerate(images):
     #     fig.add_subplot(len(images), 1, i + 1)
