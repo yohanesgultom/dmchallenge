@@ -25,7 +25,7 @@ RUN conda install -y \
   && pip install --upgrade -I setuptools \
   && pip install --upgrade keras \
   && pip install --upgrade pydicom \
-  && pip install --upgrade pylab \  
+  && pip install --upgrade matplotlib \  
   && pip install --upgrade progressbar
 
 COPY train.py /train.py
