@@ -79,6 +79,7 @@ Your trainable model is submitted in the form of a Docker image  https://docs.do
 * Docker cheatsheet https://github.com/wsargent/docker-cheat-sheet
 * Docker volume http://container-solutions.com/understanding-volumes-docker/
 * Docker submission for DM examples https://github.com/aur-dream/dm-caffe-example
+* NVIDIA docker https://github.com/NVIDIA/nvidia-docker
 
 
 ## Running using Docker
@@ -88,7 +89,7 @@ This running script is made to mimic behaviour in synapse.org environment
 > Replace paths started with `~/dmchallenge` with your own directory
 
 ```
-sudo docker run -it --rm --name preprocess \
+sudo nvidia-docker run -it --rm --name preprocess \
     -v ~/dmchallenge/pilot_images:/trainingData:ro \
     -v ~/dmchallenge/images_crosswalk_pilot_20160906.tsv:/metadata/images_crosswalk.tsv:ro \
     -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \

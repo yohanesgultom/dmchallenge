@@ -1,6 +1,6 @@
 # Docker image for training
 
-FROM ubuntu
+FROM cuda:7.5-cudnn5-runtime
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -32,3 +32,9 @@ COPY train.sh /train.sh
 COPY test.py /test.py
 COPY test.sh /test.sh
 COPY vgg16_weights.h5 /vgg16_weights.h5
+
+RUN chmod 777 /train.py
+RUN chmod 777 /train.sh
+RUN chmod 777 /test.py
+RUN chmod 777 /test.sh
+RUN chmod 777 /vgg16_weights.h5

@@ -27,3 +27,6 @@ RUN conda install -y \
 
 COPY preprocess.py /preprocess.py
 COPY preprocess.sh /preprocess.sh
+
+RUN chmod 777 /preprocess.py
+RUN chmod 777 /preprocess.sh
