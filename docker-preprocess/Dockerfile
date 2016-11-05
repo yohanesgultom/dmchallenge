@@ -23,7 +23,6 @@ RUN conda install -y \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade -I setuptools \
   && pip install --upgrade pydicom \
-  && pip install --upgrade matplotlib \
   && pip install --upgrade progressbar
 
 COPY preprocess.py /preprocess.py

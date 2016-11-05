@@ -8,7 +8,7 @@ import os
 import numpy
 import sys
 import numpy as np
-import pylab
+# import pylab
 import csv
 import scipy.ndimage.interpolation
 import progressbar
