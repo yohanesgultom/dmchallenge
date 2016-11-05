@@ -1,0 +1,10 @@
+#!/bin/sh
+
+synapseid="syn4224222"
+dockerurl="docker.synapse.org"
+
+preprocessname="mik2015-simple-preprocess"
+preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
+
+trainname="mik2015-simple-cnn-vgg16"
+trainimage="${dockerurl}/${synapseid}/${trainname}"preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
