@@ -84,16 +84,33 @@ Your trainable model is submitted in the form of a Docker image  https://docs.do
 
 ## Running using Docker
 
+Dependencies
+
+* Docker >= 1.9.0 https://docs.docker.com/engine/installation/
+* Nvidia-docker https://github.com/NVIDIA/nvidia-docker
+
 This running script is made to mimic behaviour in synapse.org environment
 
 > Replace paths started with `~/dmchallenge` with your own directory
 
 ```
-sudo nvidia-docker run -it --rm --name preprocess \
+sudo docker run -it --rm --name preprocess \
     -v ~/dmchallenge/pilot_images:/trainingData:ro \
     -v ~/dmchallenge/images_crosswalk_pilot_20160906.tsv:/metadata/images_crosswalk.tsv:ro \
     -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \
     -v ~/dmchallenge/preprocessed:/preprocessedData:rw \
-    docker.synapse.org/syn4224222/mik2015-simple-preprocess \
+    docker.synapse.org/syn7502921/mik2015-simple-preprocess \
     /bin/bash preprocess.sh
+```
+
+for training, `nvidia-docker` is used instead of `docker`
+
+```
+sudo nvidia-docker run -it --rm --name train \
+    -v ~/dmchallenge/pilot_images:/trainingData:ro \
+    -v ~/dmchallenge/images_crosswalk_pilot_20160906.tsv:/metadata/images_crosswalk.tsv:ro \
+    -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \
+    -v ~/dmchallenge/preprocessed:/preprocessedData:rw \
+    docker.synapse.org/syn7502921/mik2015-simple-cnn-vgg16 \
+    /bin/bash train.sh
 ```

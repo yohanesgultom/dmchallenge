@@ -27,6 +27,10 @@ RUN conda install -y \
   && pip install --upgrade -I setuptools \
   && pip install --upgrade keras
 
+# configure keras for Theano
+RUN mkdir /root/.keras
+COPY keras.json /root/.keras
+
 COPY train.py /train.py
 COPY train.sh /train.sh
 COPY test.py /test.py
