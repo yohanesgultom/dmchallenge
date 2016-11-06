@@ -1,6 +1,6 @@
 # Docker image for training
 
-FROM cuda:7.5-cudnn5-runtime
+FROM nvidia/cuda:7.5-cudnn5-runtime
 
 # configure cuda
 RUN echo("configure cuda path..")

@@ -1,10 +1,11 @@
 #!/bin/sh
 
-synapseid="syn4224222"
+synapseid="syn7502921"
 dockerurl="docker.synapse.org"
 
 preprocessname="mik2015-simple-preprocess"
 preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
 
 trainname="mik2015-simple-cnn-vgg16"
-trainimage="${dockerurl}/${synapseid}/${trainname}"preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
+trainimage="${dockerurl}/${synapseid}/${trainname}"
+
