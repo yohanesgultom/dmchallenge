@@ -12,6 +12,5 @@ modelname="simple-cnn-vgg16"
 echo "$USER"
 echo $(free -m)
 echo $(nvidia-smi)
-echo $(nvcc --version)
 
-THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python train.py "/preprocessedData/dataset.npz" "/modelState/${modelname}.h5"
+python train.py "/preprocessedData/dataset.npz" "/modelState/${modelname}.h5"
