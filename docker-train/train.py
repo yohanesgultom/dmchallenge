@@ -11,7 +11,7 @@ from keras.models import Sequential
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 VGG16 = 'vgg16_weights.h5'
