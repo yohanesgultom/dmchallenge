@@ -9,8 +9,9 @@
 modelname="simple-cnn-vgg16"
 
 # display specs
-echo "$USER"
 echo $(free -m)
+printf "\n\n"
 echo $(nvidia-smi)
+printf "\n\n"
 
 python train.py "/preprocessedData/dataset.npz" "/modelState/${modelname}.h5"
