@@ -1,6 +1,6 @@
 # Docker image for training
 
-FROM nvidia/cuda:7.5-cudnn5-devel
+FROM nvidia/cuda:cudnn
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
