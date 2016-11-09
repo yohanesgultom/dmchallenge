@@ -10,7 +10,7 @@ import sys
 from keras.models import Sequential
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
-from keras.optimizers import SGD
+from keras.optimizers import SGD, RMSprop
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 
@@ -78,8 +78,8 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     # model.add(Dense(1, activation='softmax'))
     # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
     # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
-    model.add(Dense(1, activation='sigmoid', init='normal'))
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer=RMSprop(lr=0.01), metrics=['accuracy'])
     return model
 
 
