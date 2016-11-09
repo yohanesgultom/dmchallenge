@@ -78,8 +78,8 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     # model.add(Dense(1, activation='softmax'))
     # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
     # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+    model.add(Dense(1, activation='sigmoid', init='normal'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
 
@@ -108,6 +108,13 @@ model.fit(X_train, Y_train,
           validation_data=(X_test, Y_test),
           shuffle=True)
 
+# evaluating
+print('Evaluating')
+score = model.evaluate(X_test, Y_test)
+print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
+
 # saving model
 print('Saving model')
 model.save(model_file)
+
+print('Done.')
