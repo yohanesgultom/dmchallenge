@@ -83,9 +83,19 @@ bar = progressbar.ProgressBar(maxval=len(filenames)).start()
 for i, dcm_filename in enumerate(filenames):
     dcm = dicom.read_file(os.path.join(dcm_dir, dcm_filename))
     m = center_crop_resize(dcm.pixel_array)
-    data.append(np.array([m, m, m]))  # mimic 3 channel
+    # if cancer multiple by 10
+    # TODO do proper data augmentation
+    if labels[i] == 1:
+        label = labels[i]
+        for j in range(10):
+            data.append(np.array([m, m, m]))
+            labels.insert(i + j, label)
+    else:
+        data.append(np.array([m, m, m]))  # mimic 3 channel
     bar.update(i)
 bar.finish()
 x = np.array(data)
 y = np.array(labels)
 np.savez(outfile, x=x, y=y)
+print(x.shape)
+print(y.shape)
