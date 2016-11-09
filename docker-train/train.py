@@ -53,11 +53,11 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(Flatten())
@@ -72,11 +72,11 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
 
     # remove last layer
     model.layers.pop()
-    # model.add(Dense(1, activation='softmax'))
-    model.add(Dense(1, activation='sigmoid'))
-    # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-    # model.compile(optimizer=sgd, loss='categorical_crossentropy')
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+    model.add(Dense(1, activation='softmax'))
+    sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer=sgd, loss='binary_crossentropy')
+    # model.add(Dense(1, activation='sigmoid'))
+    # model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
     return model
 
 
