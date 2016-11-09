@@ -52,6 +52,9 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
+    for layer in model.layers:
+        layer.trainable = False
+
     model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
@@ -67,8 +70,8 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     model.add(Dropout(0.5))
     model.add(Dense(1000, activation='softmax'))
 
-    # if weights_path:
-    #     model.load_weights(weights_path)
+    if weights_path:
+        model.load_weights(weights_path)
 
     # remove last layer
     model.layers.pop()
