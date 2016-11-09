@@ -86,10 +86,9 @@ for i, dcm_filename in enumerate(filenames):
     data.append(np.array([m, m, m]))  # mimic 3 channel
     bar.update(i)
 bar.finish()
-print(len(data))
-print(len(labels))
-# x = np.array(data)
-# y = np.array(labels)
-# np.savez(outfile, x=x, y=y)
-# print(x.shape)
-# print(y.shape)
+
+x = np.array(data)
+y = np.array(labels)
+np.savez(outfile, x=x, y=y)
+print(x.shape)
+print(y.shape)
