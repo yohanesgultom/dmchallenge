@@ -25,31 +25,31 @@ NB_EPOCH = 10
 def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     model = Sequential()
     model.add(ZeroPadding2D((1, 1), input_shape=input_shape))
-    model.add(Convolution2D(64, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(64, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(64, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(64, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(128, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(128, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(128, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(128, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(256, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(256, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(256, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(256, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(256, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(256, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', trainable=False))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(ZeroPadding2D((1, 1)))
@@ -67,16 +67,16 @@ def VGG_16(weights_path=None, input_shape=(3, 224, 224)):
     model.add(Dropout(0.5))
     model.add(Dense(1000, activation='softmax'))
 
-    if weights_path:
-        model.load_weights(weights_path)
+    # if weights_path:
+    #     model.load_weights(weights_path)
 
     # remove last layer
     model.layers.pop()
-    model.add(Dense(1, activation='softmax'))
-    sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss='binary_crossentropy')
-    # model.add(Dense(1, activation='sigmoid'))
-    # model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+    # model.add(Dense(1, activation='softmax'))
+    # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+    # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
     return model
 
 
