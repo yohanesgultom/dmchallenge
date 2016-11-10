@@ -22,7 +22,7 @@ MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 # training parameters
 BATCH_SIZE = 50
 NB_EPOCH = 10
-CLASS_WEIGHT = {0: 1.0, 1: 0.07}
+CLASS_WEIGHT = {0: 0.07, 1: 1.0}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
