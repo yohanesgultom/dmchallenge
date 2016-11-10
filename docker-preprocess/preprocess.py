@@ -24,7 +24,7 @@ EXPECTED_CLASS = 1
 MAX_VALUE = 4095
 
 # static
-scaler = StandardScaler()
+# scaler = StandardScaler()
 
 
 # preprocess image and return vectorized value
