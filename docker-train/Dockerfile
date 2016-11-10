@@ -25,7 +25,7 @@ RUN conda install -y \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
-  && pip install --upgrade keras
+  && pip install git+git://github.com/fchollet/keras.git
 
 # configure keras for Theano
 RUN echo "configure Keras with Theano.."
