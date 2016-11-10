@@ -22,6 +22,7 @@ RUN conda install -y \
     pandas \
     scikit-learn \
     theano \
+    pytables \    
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
