@@ -38,7 +38,6 @@ print(dataset.data[:].shape)
 
 # setup model
 print('Preparing model')
-# model = VGG_16(VGG16, dataset.data[0].shape)
 base_model = VGG16(weights='imagenet', include_top=False, input_tensor=Input(shape=(3, 224, 224)))
 x = base_model.output
 x = Flatten()(x)
@@ -91,10 +90,10 @@ else:
               validation_data=(X_test, Y_test),
               shuffle=True)
 
-# evaluating
-print('Evaluating')
-score = model.evaluate(X_test, Y_test)
-print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
+    # evaluating
+    print('Evaluating')
+    score = model.evaluate(X_test, Y_test)
+    print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 # saving model
 print('Saving model')
