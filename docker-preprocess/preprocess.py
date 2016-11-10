@@ -14,6 +14,7 @@ import scipy.ndimage.interpolation
 import progressbar
 import tables
 import warnings
+import pickle
 # from sklearn.preprocessing import StandardScaler
 
 # expected width/length (assumed square)
@@ -82,15 +83,64 @@ def crop(dat):
         top_left[1]:bottom_right[1] + 1
     ]
 
+
+def parse_int(s):
+    try:
+        i = int(s)
+        return i
+    except ValueError:
+        return 0
+
+
+def parse_float(s):
+    try:
+        i = float(s)
+        return i
+    except ValueError:
+        return 0.0
+
 if __name__ == '__main__':
     dcm_dir = sys.argv[1]
     crosswalk_file = sys.argv[2]
-    outfile = sys.argv[3]
+    meta_file = sys.argv[3]
+    meta_outfile = sys.argv[4]
+    data_outfile = sys.argv[5]
 
     # pytables file
-    datafile = tables.open_file(outfile, mode='w')
+    datafile = tables.open_file(data_outfile, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     labels = datafile.create_earray(datafile.root, 'labels', tables.UInt8Atom(shape=(EXPECTED_CLASS)), (0,), 'dream')
+
+    # read metadata
+    metadata = {}
+    with open(meta_file, 'r') as metain:
+        reader = csv.reader(metain, delimiter='\t')
+        headers = next(reader, None)
+        for row in reader:
+            key = row[0] + '_' + row[1]
+            metadata[key] = {
+                'id': row[0],
+                'examIndex': row[1],
+                'daysSincePreviousExam': parse_int(row[2]),
+                'cancerL': parse_int(row[3]),
+                'cancerR': parse_int(row[4]),
+                'invL': parse_int(row[5]),
+                'invR': parse_int(row[6]),
+                'age': parse_int(row[7]),
+                'implantEver': parse_int(row[8]),
+                'implantNow': parse_int(row[9]),
+                'bcHistory': parse_int(row[10]),
+                'yearsSincePreviousBc': parse_float(row[11]),
+                'previousBcLaterality': parse_int(row[12]),
+                'reduxHistory': parse_int(row[13]),
+                'reduxLaterality': parse_int(row[14]),
+                'hrt': parse_int(row[15]),
+                'antiestrogen': parse_int(row[16]),
+                'firstDegreeWithBc': parse_int(row[17]),
+                'firstDegreeWithBc50': parse_int(row[18]),
+                'bmi': parse_float(row[19]),
+                'race': parse_int(row[20])
+            }
 
     # read crosswalk
     filenames = []
@@ -98,10 +148,15 @@ if __name__ == '__main__':
         crosswalk = csv.reader(tsvin, delimiter='\t')
         headers = next(crosswalk, None)
         for row in crosswalk:
+            dcm_subject_id = row[0]
+            dcm_exam_id = row[1]
+            dcm_laterality = row[4]
             dcm_filename = row[5]
-            dcm_label = int(row[6])
+            key = row[0] + '_' + row[1]
+            dcm_label = metadata[key]['cancer' + dcm_laterality.upper()]
             filenames.append(dcm_filename)
             labels.append(np.array([[dcm_label]]))
+            # print('meta[{}][{}] = {}'.format(key, 'cancer' + dcm_laterality.upper(), dcm_label))
 
     # read dicom images
     bar = progressbar.ProgressBar(maxval=len(filenames)).start()
@@ -112,6 +167,10 @@ if __name__ == '__main__':
 
     print(data[:].shape)
     print(labels[:].shape)
+
+    # save metadata
+    with open(data_outfile, 'wb') as handle:
+        pickle.dump(metadata, handle)
 
     # close file
     datafile.close()
