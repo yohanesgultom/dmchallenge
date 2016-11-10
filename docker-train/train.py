@@ -13,16 +13,16 @@ from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD, RMSprop
-from sklearn.model_selection import train_test_split
-from datetime import datetime
 from keras.applications.vgg16 import VGG16
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from datetime import datetime
 
 MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 # training parameters
 BATCH_SIZE = 50
 NB_EPOCH = 10
-CLASS_WEIGHT = {0: 0.07, 1: 1.0}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -73,25 +73,24 @@ if num_rows > DATASET_BATCH_SIZE:
             print('Data batch {}/{}'.format(i + 1, num_iterate))
             begin = i + i * DATASET_BATCH_SIZE
             end = begin + DATASET_BATCH_SIZE
-            X_train, X_test, Y_train, Y_test = train_test_split(
-                dataset.data[begin:end], dataset.labels[begin:end],
-                test_size=0.10
-            )
+            X = StandardScaler().fit_transform(dataset.data[begin:end])
+            Y = dataset.labels[begin:end]
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
             model.fit(X_train, Y_train,
                       batch_size=BATCH_SIZE,
                       nb_epoch=1,
                       validation_data=(X_test, Y_test),
-                      shuffle=True,
-                      class_weight=CLASS_WEIGHT)
+                      shuffle=True)
 else:
     # one-go training
-    X_train, X_test, Y_train, Y_test = train_test_split(dataset.data[:], dataset.labels[:], test_size=0.10)
+    X = StandardScaler().fit_transform(dataset.data[:])
+    Y = dataset.labels[:]
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
     model.fit(X_train, Y_train,
               batch_size=BATCH_SIZE,
               nb_epoch=NB_EPOCH,
               validation_data=(X_test, Y_test),
-              shuffle=True,
-              class_weight=CLASS_WEIGHT)
+              shuffle=True)
 
     # evaluating
     print('Evaluating')
