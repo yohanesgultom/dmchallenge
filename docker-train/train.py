@@ -15,7 +15,6 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2
 from keras.optimizers import SGD, RMSprop
 from keras.applications.vgg16 import VGG16
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from datetime import datetime
 
 MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
@@ -57,7 +56,8 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+# model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
 # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -73,7 +73,7 @@ if num_rows > DATASET_BATCH_SIZE:
             print('Data batch {}/{}'.format(i + 1, num_iterate))
             begin = i + i * DATASET_BATCH_SIZE
             end = begin + DATASET_BATCH_SIZE
-            X = StandardScaler().fit_transform(dataset.data[begin:end])
+            X = dataset.data[begin:end]
             Y = dataset.labels[begin:end]
             X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
             model.fit(X_train, Y_train,
@@ -83,7 +83,7 @@ if num_rows > DATASET_BATCH_SIZE:
                       shuffle=True)
 else:
     # one-go training
-    X = StandardScaler().fit_transform(dataset.data[:])
+    X = dataset.data[:]
     Y = dataset.labels[:]
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
     model.fit(X_train, Y_train,
