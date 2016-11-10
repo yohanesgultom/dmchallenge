@@ -45,7 +45,7 @@ x = Dense(4096, activation='relu')(x)
 x = Dropout(0.5)(x)
 x = Dense(4096, activation='relu')(x)
 x = Dropout(0.5)(x)
-predictions = Dense(1, activation='sigmoid')(x)
+predictions = Dense(1, activation='sigmoid', init='uniform')(x)
 # predictions = Dense(1, activation='softmax')(x)
 
 # this is the model we will train
@@ -56,8 +56,7 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
-# model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
 # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
