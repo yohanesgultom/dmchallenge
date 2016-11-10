@@ -22,7 +22,7 @@ RUN conda install -y \
     pandas \
     scikit-learn \
     theano \
-    pytables \    
+    pytables \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
@@ -31,7 +31,9 @@ RUN conda install -y \
 # configure keras for Theano
 RUN echo "configure Keras with Theano.."
 RUN mkdir /root/.keras
+RUN mkdir /root/.keras/models
 COPY keras.json /root/.keras
+COPY vgg16_weights_th_dim_ordering_th_kernels_notop.h5 /root/.keras/models
 COPY .theanorc /root
 
 # copy training and test files
