@@ -22,6 +22,7 @@ MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 # training parameters
 BATCH_SIZE = 50
 NB_EPOCH = 10
+CLASS_WEIGHT = {0: 1.0, 1: 0.07}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -80,7 +81,8 @@ if num_rows > DATASET_BATCH_SIZE:
                       batch_size=BATCH_SIZE,
                       nb_epoch=1,
                       validation_data=(X_test, Y_test),
-                      shuffle=True)
+                      shuffle=True,
+                      class_weight=CLASS_WEIGHT)
 else:
     # one-go training
     X_train, X_test, Y_train, Y_test = train_test_split(dataset.data[:], dataset.labels[:], test_size=0.10)
@@ -88,7 +90,8 @@ else:
               batch_size=BATCH_SIZE,
               nb_epoch=NB_EPOCH,
               validation_data=(X_test, Y_test),
-              shuffle=True)
+              shuffle=True,
+              class_weight=CLASS_WEIGHT)
 
     # evaluating
     print('Evaluating')
