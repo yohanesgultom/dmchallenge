@@ -14,6 +14,7 @@ import scipy.ndimage.interpolation
 import progressbar
 import tables
 import warnings
+# from sklearn.preprocessing import StandardScaler
 
 # expected width/length (assumed square)
 EXPECTED_SIZE = 224
@@ -21,6 +22,9 @@ EXPECTED_CHANNELS = 3
 EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
 EXPECTED_CLASS = 1
 MAX_VALUE = 4095
+
+# static
+scaler = StandardScaler()
 
 
 # preprocess image and return vectorized value
@@ -44,9 +48,11 @@ def center_crop_resize(dat):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         resized = scipy.ndimage.interpolation.zoom(cropped, scale, order=3, prefilter=True)
-    assert resized.shape == (EXPECTED_SIZE, EXPECTED_SIZE)
-    # scaled to 0..1
-    norm = resized * 1.0 / MAX_VALUE
+        assert resized.shape == (EXPECTED_SIZE, EXPECTED_SIZE)
+        # scaled to 0..1
+        norm = resized * 1.0 / MAX_VALUE
+        # # normalize
+        # norm = scaler.fit_transform(resized)
     # print(cropped.shape)
     # print(resized.shape)
     # print(resized)
