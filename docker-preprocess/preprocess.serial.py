@@ -1,6 +1,6 @@
 '''
 Build DM dataset
-Usage: python preprocess.py <in:DM images directory> <in:DM crosswalk file> <in:DM meta file> <out:meta pickle> <out:dataset h5>
+Usage: python preprocess.py <in:DM images directory> <in:DM crosswalk file> <out:dataset h5>
 
 '''
 import dicom
@@ -11,12 +11,10 @@ import numpy as np
 # import pylab
 import csv
 import scipy.ndimage.interpolation
-# import progressbar
+import progressbar
 import tables
 import warnings
 import pickle
-import math
-import multiprocessing
 # from sklearn.preprocessing import StandardScaler
 
 # expected width/length (assumed square)
@@ -30,35 +28,11 @@ MAX_VALUE = 4095
 # scaler = StandardScaler()
 
 
-# preprocess images and append it to a h5 file
-def preprocess_images(filedir, filenames, datafile):
-    processname = multiprocessing.current_process().name
-    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
-    total = len(filenames)
-    count = 0
-    for f in filenames:
-        data.append(preprocess_image(os.path.join(filedir, f)))
-        count += 1
-        if count > 10 and count % 10 == 0:
-            print('{}: {}/{}'.format(processname, count, total))
-    print('{}: {}/{}'.format(processname, count, total))
-
-
 # preprocess image and return vectorized value
 def preprocess_image(filename):
     dcm = dicom.read_file(filename)
     m = center_crop_resize(dcm.pixel_array)
     return np.array([[m, m, m]])
-
-
-# merge tmp files arrays to single array
-# and delete all tmp files
-def merge_files(datafiles, array):
-    for f in datafiles:
-        for row in datafile.root.data:
-            array.append(row)
-        f.close()
-    return array
 
 
 # center crop non-zero and downsample to EXPECTED_SIZE
@@ -184,35 +158,12 @@ if __name__ == '__main__':
             labels.append(np.array([[dcm_label]]))
             # print('meta[{}][{}] = {}'.format(key, 'cancer' + dcm_laterality.upper(), dcm_label))
 
-    # read dicom images parallelly
-    # count cpu cores
-    cpu_count = multiprocessing.cpu_count()
-    chunk_size = int(math.ceil(len(filenames) * 1.0 / cpu_count))
-    tmp_files = []
-    tmp_names = []
-    processes = []
-    for i in range(cpu_count):
-        tmp_names.append('tmp{}.h5'.format(i))
-        tmp_files.append(tables.open_file(tmp_names[i], mode='w'))
-        start = i + i * chunk_size
-        end = start + chunk_size
-        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_files[i]))
-        p.start()
-        processes.append(p)
-    # wait all processes to complete
-    for p in processes:
-        p.join()
-    # merge all tmp files
-    data = merge_files(tmp_files, data)
-    for f in tmp_names:
-        os.remove(f)
-
-    # read dicom images sequentially
-    # bar = progressbar.ProgressBar(maxval=len(filenames)).start()
-    # for i, dcm_filename in enumerate(filenames):
-    #     data.append(preprocess_image(os.path.join(dcm_dir, dcm_filename)))
-    #     bar.update(i)
-    # bar.finish()
+    # read dicom images
+    bar = progressbar.ProgressBar(maxval=len(filenames)).start()
+    for i, dcm_filename in enumerate(filenames):
+        data.append(preprocess_image(os.path.join(dcm_dir, dcm_filename)))
+        bar.update(i)
+    bar.finish()
 
     print(data[:].shape)
     print(labels[:].shape)
