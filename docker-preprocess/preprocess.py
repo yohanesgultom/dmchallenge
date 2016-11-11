@@ -51,16 +51,6 @@ def preprocess_image(filename):
     return np.array([[m, m, m]])
 
 
-# merge tmp files arrays to single array
-# and delete all tmp files
-def merge_files(datafiles, array):
-    for f in datafiles:
-        for row in datafile.root.data:
-            array.append(row)
-        f.close()
-    return array
-
-
 # center crop non-zero and downsample to EXPECTED_SIZE
 def center_crop_resize(dat):
     # crop zeros (black parts)
@@ -202,8 +192,12 @@ if __name__ == '__main__':
     # wait all processes to complete
     for p in processes:
         p.join()
-    # merge all tmp files
-    data = merge_files(tmp_files, data)
+    # merge tmp files arrays to single array
+    # and delete all tmp files
+    for f in tmp_files:
+        for row in datafile.root.data:
+            data.append(row)
+        f.close()
     for f in tmp_names:
         os.remove(f)
 
