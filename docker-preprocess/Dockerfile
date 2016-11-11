@@ -21,12 +21,12 @@ RUN conda install -y \
     pandas \
     scipy \
     opencv \
-    pydicom \
     progressbar \
     pytables \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
-  && pip install --upgrade -I setuptools
+  && pip install --upgrade -I setuptools \
+  && pip install --upgrade pydicom
 
 COPY preprocess.py /preprocess.py
 COPY preprocess.sh /preprocess.sh
