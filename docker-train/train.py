@@ -19,8 +19,9 @@ from datetime import datetime
 
 # training parameters
 BATCH_SIZE = 30
-NB_EPOCH = 10
-CLASS_WEIGHT = {0: 0.07, 1: 1.0}
+NB_EPOCH = 30
+#CLASS_WEIGHT = {0: 0.07, 1: 1.0}
+CLASS_WEIGHT = {0: 1.0, 1: 1.0}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -61,7 +62,7 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['accuracy'])
 # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
 # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
