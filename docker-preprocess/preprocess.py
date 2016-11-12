@@ -8,16 +8,17 @@ import os
 import numpy
 import sys
 import numpy as np
-# import pylab
 import csv
-import scipy.ndimage.interpolation
-# import progressbar
 import tables
 import warnings
 import pickle
 import math
 import multiprocessing
-# from sklearn.preprocessing import StandardScaler
+from scipy import ndimage
+
+# config
+FILTER_THRESHOLD = 0.4
+MEDIAN_FILTER = 4
 
 # expected width/length (assumed square)
 EXPECTED_SIZE = 224
@@ -50,6 +51,9 @@ def preprocess_images(filedir, filenames, datafilename):
 def preprocess_image(filename):
     dcm = dicom.read_file(filename)
     m = center_crop_resize(dcm.pixel_array)
+    # reduce low pixel to zero
+    m[m < FILTER_THRESHOLD] = 0
+    m = ndimage.median_filter(m, MEDIAN_FILTER)
     return np.array([[m, m, m]])
 
 
@@ -66,7 +70,7 @@ def center_crop_resize(dat):
     scale = EXPECTED_SIZE * 1.0 / cropped.shape[1]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        resized = scipy.ndimage.interpolation.zoom(cropped, scale, order=3, prefilter=True)
+        resized = ndimage.interpolation.zoom(cropped, scale, order=3, prefilter=True)
         assert resized.shape == (EXPECTED_SIZE, EXPECTED_SIZE)
         # scaled to 0..1
         norm = resized * 1.0 / MAX_VALUE

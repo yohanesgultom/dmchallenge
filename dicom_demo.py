@@ -3,10 +3,25 @@
 import dicom
 import numpy as np
 import pylab
-import cv2
 import warnings
+import matplotlib.pyplot as plt
 from dicom.datadict import all_names_for_tag
-from sklearn.preprocessing import StandardScaler
+from scipy import ndimage
+
+
+# center crop non-zero and downsample to EXPECTED_SIZE
+def center_crop_resize(dat, expected_size, max_value):
+    cropped = crop(dat)
+    start = cropped.shape[0] / 2 - (cropped.shape[1] / 2)
+    end = start + cropped.shape[1]
+    cropped = cropped[start:end, :]
+    scale = expected_size * 1.0 / cropped.shape[1]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        resized = ndimage.interpolation.zoom(cropped, scale, order=3, prefilter=True)
+        assert resized.shape == (expected_size, expected_size)
+        norm = resized * 1.0 / max_value
+    return norm
 
 
 # Crop non-zero rectangle
@@ -25,11 +40,6 @@ def crop(dat):
     ]
 
 
-def scaledown(src):
-    src *= (255 / src)
-    return cv2.convertScaleAbs(src)
-
-
 def plot(images):
     fig = pylab.figure()
     for i, m in enumerate(images):
@@ -45,25 +55,24 @@ positive_dcm = dicom.read_file("100152.dcm")
 # print(positive_dcm)
 
 # get image pixels numpy array
-positive_array_full = positive_dcm.pixel_array
-positive_array = crop(positive_array_full)
-# plot([positive_array_full, positive_array])
-
-# histogram equalization
-# positive_scaled = scaledown(positive.pixel_array)
-# equalized = cv2.equalizeHist(src1)
+p = crop(positive_dcm.pixel_array)
+n = crop(negative_dcm.pixel_array)
+pt = center_crop_resize(positive_dcm.pixel_array, 224, 4095)
+nt = center_crop_resize(negative_dcm.pixel_array, 224, 4095)
 
 # normalize
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    positive_array_normal = StandardScaler().fit_transform(positive_array)
-    print(positive_array.max())
-    print(positive_array_normal.max())
+p = p / 4095.0
+n = n / 4095.0
+
+pt[pt < 0.4] = 0
+nt[nt < 0.4] = 0
+
+# plt.matshow(ndimage.gaussian_filter(pt, 2), 1)
+# plt.matshow(ndimage.gaussian_filter(nt, 2), 2)
+plt.matshow(ndimage.median_filter(pt, 4), 3)
+plt.matshow(ndimage.median_filter(nt, 4), 4)
+plt.show()
 
 # # accessing info
 # elem = postive_dcm[0x0010, 0x0010]
 # print(elem.tag, elem.description(), elem.value)
-
-# # render image
-# pylab.imshow(ds.pixel_array, cmap=pylab.cm.bone)
-# pylab.show()
