@@ -204,7 +204,7 @@ if __name__ == '__main__':
     print(data[:].shape)
     print(labels[:].shape)
     assert data[:].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
-    assert labesl[:].shape == (len(filenames), EXPECTED_CLASS)
+    assert labels[:].shape == (len(filenames), EXPECTED_CLASS)
 
     # save metadata
     with open(meta_outfile, 'wb') as handle:
