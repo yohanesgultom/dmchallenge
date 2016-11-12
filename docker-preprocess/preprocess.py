@@ -123,6 +123,7 @@ if __name__ == '__main__':
     meta_file = sys.argv[3]
     meta_outfile = sys.argv[4]
     data_outfile = sys.argv[5]
+    data_outfile_dir = os.path.dirname(os.path.abspath(data_outfile))
 
     # pytables file
     datafile = tables.open_file(data_outfile, mode='w')
@@ -178,12 +179,12 @@ if __name__ == '__main__':
 
     # read dicom images parallelly
     # use half of available "cpus"
-    cpu_count = multiprocessing.cpu_count() / 2
+    cpu_count = multiprocessing.cpu_count()
     chunk_size = int(math.ceil(len(filenames) * 1.0 / cpu_count))
     tmp_names = []
     processes = []
     for i in range(cpu_count):
-        tmp_names.append('tmp{}.h5'.format(i))
+        tmp_names.append(os.path.join(data_outfile_dir, 'tmp{}.h5'.format(i)))
         start = i * chunk_size
         end = start + chunk_size
         p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i]))
