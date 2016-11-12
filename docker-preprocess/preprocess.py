@@ -31,17 +31,19 @@ MAX_VALUE = 4095
 
 
 # preprocess images and append it to a h5 file
-def preprocess_images(filedir, filenames, datafile):
+def preprocess_images(filedir, filenames, datafilename):
     processname = multiprocessing.current_process().name
+    datafile = tables.open_file(datafilename, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     total = len(filenames)
     count = 0
     for f in filenames:
         data.append(preprocess_image(os.path.join(filedir, f)))
         count += 1
-        if count > 10 and count % 10 == 0:
+        if count >= 10 and count % 10 == 0:
             print('{}: {}/{}'.format(processname, count, total))
     print('{}: {}/{}'.format(processname, count, total))
+    datafile.close()
 
 
 # preprocess image and return vectorized value
@@ -175,18 +177,16 @@ if __name__ == '__main__':
             # print('meta[{}][{}] = {}'.format(key, 'cancer' + dcm_laterality.upper(), dcm_label))
 
     # read dicom images parallelly
-    # count cpu cores
-    cpu_count = multiprocessing.cpu_count()
+    # use half of available "cpus"
+    cpu_count = multiprocessing.cpu_count() / 2
     chunk_size = int(math.ceil(len(filenames) * 1.0 / cpu_count))
-    tmp_files = []
     tmp_names = []
     processes = []
     for i in range(cpu_count):
         tmp_names.append('tmp{}.h5'.format(i))
-        tmp_files.append(tables.open_file(tmp_names[i], mode='w'))
-        start = i + i * chunk_size
+        start = i * chunk_size
         end = start + chunk_size
-        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_files[i]))
+        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i]))
         p.start()
         processes.append(p)
     # wait all processes to complete
@@ -194,19 +194,11 @@ if __name__ == '__main__':
         p.join()
     # merge tmp files arrays to single array
     # and delete all tmp files
-    for f in tmp_files:
-        for row in datafile.root.data:
-            data.append(row)
-        f.close()
     for f in tmp_names:
+        datafile = tables.open_file(f, mode='r')
+        data.append(datafile.root.data[:])
+        datafile.close()
         os.remove(f)
-
-    # read dicom images sequentially
-    # bar = progressbar.ProgressBar(maxval=len(filenames)).start()
-    # for i, dcm_filename in enumerate(filenames):
-    #     data.append(preprocess_image(os.path.join(dcm_dir, dcm_filename)))
-    #     bar.update(i)
-    # bar.finish()
 
     print(data[:].shape)
     print(labels[:].shape)

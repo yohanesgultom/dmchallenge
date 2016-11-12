@@ -17,14 +17,19 @@ from keras.applications.vgg16 import VGG16
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 
-MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
-
 # training parameters
 BATCH_SIZE = 50
 NB_EPOCH = 10
+CLASS_WEIGHT = {0: 0.07, 1: 1.0}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
+
+# global consts
+EXPECTED_SIZE = 224
+EXPECTED_CHANNELS = 3
+EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
+MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 # command line arguments
 dataset_file = sys.argv[1]
@@ -38,7 +43,7 @@ print(dataset.data[:].shape)
 
 # setup model
 print('Preparing model')
-base_model = VGG16(weights='imagenet', include_top=False, input_tensor=Input(shape=(3, 224, 224)))
+base_model = VGG16(weights='imagenet', include_top=False, input_tensor=Input(shape=EXPECTED_DIM))
 x = base_model.output
 x = Flatten()(x)
 x = Dense(4096, activation='relu')(x)
@@ -70,7 +75,7 @@ if num_rows > DATASET_BATCH_SIZE:
         print('Epoch {}/{}'.format(e + 1, NB_EPOCH))
         for i in range(num_iterate):
             print('Data batch {}/{}'.format(i + 1, num_iterate))
-            begin = i + i * DATASET_BATCH_SIZE
+            begin = i * DATASET_BATCH_SIZE
             end = begin + DATASET_BATCH_SIZE
             X = dataset.data[begin:end]
             Y = dataset.labels[begin:end]
@@ -79,7 +84,8 @@ if num_rows > DATASET_BATCH_SIZE:
                       batch_size=BATCH_SIZE,
                       nb_epoch=1,
                       validation_data=(X_test, Y_test),
-                      shuffle=True)
+                      shuffle=True,
+                      class_weight=CLASS_WEIGHT)
 else:
     # one-go training
     X = dataset.data[:]
@@ -89,7 +95,8 @@ else:
               batch_size=BATCH_SIZE,
               nb_epoch=NB_EPOCH,
               validation_data=(X_test, Y_test),
-              shuffle=True)
+              shuffle=True,
+              class_weight=CLASS_WEIGHT)
 
     # evaluating
     print('Evaluating')
