@@ -13,4 +13,4 @@ echo $(nproc) CPUs available.
 echo $(free -m)
 
 # generate keras-compatible dataset
-time python preprocess.py "/trainingData" "/metadata/images_crosswalk.tsv" "/metadata/exams_metadata.tsv" "/preprocessedData/metadata.pickle" "/preprocessedData/dataset.h5"
+python preprocess.py "/trainingData" "/metadata/images_crosswalk.tsv" "/metadata/exams_metadata.tsv" "/preprocessedData/metadata.pickle" "/preprocessedData/dataset.h5"
