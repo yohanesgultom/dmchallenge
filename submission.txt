@@ -1,2 +1,2 @@
-preprocessing=docker.synapse.org/syn7502921/mik2015-simple-preprocess@sha256:0cdafaa8aecca583eb8839606336ee2fcbb7056ddf7fbe8c6c407ee355cfdb65
-training=docker.synapse.org/syn7502921/mik2015-simple-cnn-vgg16@sha256:1d2d6c60d050ded3a3ba57df5b400dac670f7114a1f823d320b5a6c03c395a3a
+preprocessing=docker.synapse.org/syn7502921/mik2015-simple-preprocess@sha256:a8f6fed17069e47b97319a50032e07f26aa307035d9e0e3905b8c793c9bd0452
+training=docker.synapse.org/syn7502921/mik2015-simple-cnn-vgg16@sha256:e4885b5d0e6c1314c5658068dd5b6d7df29239f942398f568ff6ee59bb049238
