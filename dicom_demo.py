@@ -2,7 +2,6 @@
 
 import dicom
 import numpy as np
-import pylab
 import warnings
 import matplotlib.pyplot as plt
 from dicom.datadict import all_names_for_tag
@@ -40,13 +39,6 @@ def crop(dat):
     ]
 
 
-def plot(images):
-    fig = pylab.figure()
-    for i, m in enumerate(images):
-        fig.add_subplot(len(images), 1, i + 1)
-        pylab.imshow(m, cmap=pylab.cm.bone)
-    pylab.show()
-
 # load dicom
 negative_dcm = dicom.read_file("100151.dcm")
 positive_dcm = dicom.read_file("100152.dcm")
@@ -69,8 +61,16 @@ nt[nt < 0.4] = 0
 
 # plt.matshow(ndimage.gaussian_filter(pt, 2), 1)
 # plt.matshow(ndimage.gaussian_filter(nt, 2), 2)
-plt.matshow(ndimage.median_filter(pt, 4), 3)
-plt.matshow(ndimage.median_filter(nt, 4), 4)
+# plt.matshow(ndimage.median_filter(pt, 4), 3)
+# plt.matshow(ndimage.median_filter(nt, 4), 4)
+# plt.show()
+
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
+ax1.imshow(p)
+ax2.imshow(ndimage.median_filter(pt, 4))
+ax3.imshow(n)
+ax4.imshow(ndimage.median_filter(nt, 4))
+plt.tight_layout()
 plt.show()
 
 # # accessing info
