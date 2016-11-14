@@ -19,8 +19,9 @@ from datetime import datetime
 
 # training parameters
 BATCH_SIZE = 30
-NB_EPOCH = 30
-#CLASS_WEIGHT = {0: 0.07, 1: 1.0}
+NB_EPOCH_SMALL_DATA = 30
+NB_EPOCH_LARGE_DATA = 10
+# CLASS_WEIGHT = {0: 0.07, 1: 1.0}
 CLASS_WEIGHT = {0: 1.0, 1: 1.0}
 
 # dataset
@@ -32,6 +33,17 @@ EXPECTED_CHANNELS = 3
 EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
 MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
+
+def dataset_generator(X, Y, batch_size):
+    num_iterate = X.nrows / batch_size
+    for i in range(num_iterate):
+        begin = i * DATASET_BATCH_SIZE
+        end = begin + DATASET_BATCH_SIZE
+        X = dataset.data[begin:end]
+        Y = dataset.labels[begin:end]
+        yield(X, Y)
+
+
 # command line arguments
 dataset_file = sys.argv[1]
 model_file = sys.argv[2] if len(sys.argv) > 2 else MODEL_PATH
@@ -41,6 +53,12 @@ print('Loading train dataset: {}'.format(dataset_file))
 datafile = tables.open_file(dataset_file, mode='r')
 dataset = datafile.root
 print(dataset.data[:].shape)
+
+# determine epoch based on data size
+if dataset.data[:].shape[0] <= 50000:
+    NB_EPOCH = NB_EPOCH_SMALL_DATA
+else:
+    NB_EPOCH = NB_EPOCH_LARGE_DATA
 
 # setup model
 print('Preparing model')
@@ -87,6 +105,13 @@ if num_rows > DATASET_BATCH_SIZE:
                       validation_data=(X_test, Y_test),
                       shuffle=True,
                       class_weight=CLASS_WEIGHT)
+    # batch evaluate
+    print('Evaluating')
+    model.evaluate_generator(
+        dataset_generator(dataset.data, dataset.labels, DATASET_BATCH_SIZE),
+        num_rows
+    )
+
 else:
     # one-go training
     X = dataset.data[:]
