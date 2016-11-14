@@ -27,9 +27,6 @@ EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
 EXPECTED_CLASS = 1
 MAX_VALUE = 4095
 
-# static
-# scaler = StandardScaler()
-
 
 # preprocess images and append it to a h5 file
 def preprocess_images(filedir, filenames, datafilename):
@@ -74,19 +71,6 @@ def center_crop_resize(dat):
         assert resized.shape == (EXPECTED_SIZE, EXPECTED_SIZE)
         # scaled to 0..1
         norm = resized * 1.0 / MAX_VALUE
-        # # normalize
-        # norm = scaler.fit_transform(resized)
-    # print(cropped.shape)
-    # print(resized.shape)
-    # print(resized)
-    # print(norm)
-    # # render image
-    # images = [dat, norm]
-    # fig = pylab.figure()
-    # for i, m in enumerate(images):
-    #     fig.add_subplot(len(images), 1, i + 1)
-    #     pylab.imshow(m, cmap=pylab.cm.bone)
-    # pylab.show()
     return norm
 
 
@@ -167,6 +151,7 @@ if __name__ == '__main__':
 
     # read crosswalk
     filenames = []
+    stat = {'positive': 0, 'negative': 0}
     with open(crosswalk_file, 'rb') as tsvin:
         crosswalk = csv.reader(tsvin, delimiter='\t')
         headers = next(crosswalk, None)
@@ -179,10 +164,13 @@ if __name__ == '__main__':
             dcm_label = metadata[key]['cancer' + dcm_laterality.upper()]
             filenames.append(dcm_filename)
             labels.append(np.array([[dcm_label]]))
-            # print('meta[{}][{}] = {}'.format(key, 'cancer' + dcm_laterality.upper(), dcm_label))
+            # count labels
+            if dcm_label == 1:
+                stat['positive'] += 1
+            else:
+                stat['negative'] += 1
 
     # read dicom images parallelly
-    # use half of available "cpus"
     cpu_count = multiprocessing.cpu_count()
     chunk_size = int(math.ceil(len(filenames) * 1.0 / cpu_count))
     tmp_names = []
@@ -207,6 +195,7 @@ if __name__ == '__main__':
 
     print(data[:].shape)
     print(labels[:].shape)
+    print(stat)
     assert data[:].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
     assert labels[:].shape == (len(filenames), EXPECTED_CLASS)
 
