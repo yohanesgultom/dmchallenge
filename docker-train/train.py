@@ -19,6 +19,7 @@ from datetime import datetime
 
 # training parameters
 BATCH_SIZE = 30
+NB_SMALL = 50000
 NB_EPOCH_SMALL_DATA = 30
 NB_EPOCH_LARGE_DATA = 10
 # CLASS_WEIGHT = {0: 0.07, 1: 1.0}
@@ -34,13 +35,10 @@ EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
 MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 
-def dataset_generator(X, Y, batch_size):
-    num_iterate = X.nrows / batch_size
-    for i in range(num_iterate):
-        begin = i * DATASET_BATCH_SIZE
-        end = begin + DATASET_BATCH_SIZE
-        X = dataset.data[begin:end]
-        Y = dataset.labels[begin:end]
+def dataset_generator(X, Y):
+    for i in range(X.nrows):
+        X = dataset.data[i]
+        Y = dataset.labels[i]
         yield(X, Y)
 
 
@@ -55,7 +53,7 @@ dataset = datafile.root
 print(dataset.data[:].shape)
 
 # determine epoch based on data size
-if dataset.data[:].shape[0] <= 50000:
+if dataset.data[:].shape[0] <= NB_SMALL:
     NB_EPOCH = NB_EPOCH_SMALL_DATA
 else:
     NB_EPOCH = NB_EPOCH_LARGE_DATA
