@@ -14,4 +14,4 @@ printf "\n\n"
 echo $(nvidia-smi)
 printf "\n\n"
 
-python train.py "/preprocessedData/dataset.h5" "/modelState/${modelname}.h5"
+/usr/bin/time python train.py "/preprocessedData/dataset.h5" "/modelState/${modelname}.h5"
