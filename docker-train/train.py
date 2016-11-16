@@ -113,7 +113,7 @@ if num_rows > DATASET_BATCH_SIZE:
         Y = dataset.labels[begin:end]
         s = model.evaluate(X, Y)
         accuracies.append(s[1])
-    score = sum(scores) / float(len(scores))
+    score = sum(accuracies) / float(len(accuracies))
     print('{}: {}%'.format(model.metrics_names[1], score * 100))
 
 else:
