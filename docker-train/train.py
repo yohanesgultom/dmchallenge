@@ -105,13 +105,14 @@ if num_rows > DATASET_BATCH_SIZE:
                       class_weight=CLASS_WEIGHT)
     # batch evaluate
     print('Evaluating')
-    scores = []
+    accuracies = []
     for i in range(num_iterate):
         begin = i * DATASET_BATCH_SIZE
         end = begin + DATASET_BATCH_SIZE
         X = dataset.data[begin:end]
         Y = dataset.labels[begin:end]
-        scores.append(model.evaluate(X, Y))
+        s = model.evaluate(X, Y)
+        accuracies.append(s[1])
     score = sum(scores) / float(len(scores))
     print('{}: {}%'.format(model.metrics_names[1], score * 100))
 
