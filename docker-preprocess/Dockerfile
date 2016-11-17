@@ -8,6 +8,7 @@ RUN apt-get update \
     curl \
     git \
     ca-certificates \
+    time \
   && rm -rf /var/lib/apt/lists/*
 
 RUN curl -qsSLkO \
