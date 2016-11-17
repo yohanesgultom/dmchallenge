@@ -45,6 +45,7 @@ def dataset_generator(X, Y):
 # command line arguments
 dataset_file = sys.argv[1]
 model_file = sys.argv[2] if len(sys.argv) > 2 else MODEL_PATH
+verbosity = int(sys.argv[3]) if len(sys.argv) > 3 else 1
 
 # loading dataset
 print('Loading train dataset: {}'.format(dataset_file))
@@ -102,6 +103,7 @@ if num_rows > DATASET_BATCH_SIZE:
                       nb_epoch=1,
                       validation_data=(X_test, Y_test),
                       shuffle=True,
+                      verbose=verbosity,
                       class_weight=CLASS_WEIGHT)
     # batch evaluate
     print('Evaluating')
@@ -126,6 +128,7 @@ else:
               nb_epoch=NB_EPOCH,
               validation_data=(X_test, Y_test),
               shuffle=True,
+              verbose=verbosity,
               class_weight=CLASS_WEIGHT)
 
     # evaluating
@@ -135,7 +138,9 @@ else:
 
 # saving model
 print('Saving model')
-model.save(model_file)
+# model.save(model_file)
+# save weights only to save space
+model.save_weights(model_file)
 
 # close dataset
 datafile.close()

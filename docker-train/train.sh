@@ -5,13 +5,6 @@
 # /trainingData (read-only) already mounted
 # /metadata (read-only) already mounted
 
-# vars
-modelname="simple-cnn-vgg16"
+source config
 
-# display specs
-echo $(free -m)
-printf "\n\n"
-echo $(nvidia-smi)
-printf "\n\n"
-
-/usr/bin/time python train.py "/preprocessedData/dataset.h5" "/modelState/${modelname}.h5"
+/usr/bin/time python train.py "/preprocessedData/dataset.h5" "/modelState/${modelname}.h5" 0
