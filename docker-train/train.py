@@ -19,7 +19,7 @@ from datetime import datetime
 
 # training parameters
 BATCH_SIZE = 30
-NB_SMALL = 50000
+NB_SMALL = 3000
 NB_EPOCH_SMALL_DATA = 30
 NB_EPOCH_LARGE_DATA = 10
 # CLASS_WEIGHT = {0: 0.07, 1: 1.0}
