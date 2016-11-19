@@ -29,14 +29,14 @@ MAX_VALUE = 4095
 
 
 # preprocess images and append it to a h5 file
-def preprocess_images(filedir, filenames, datafilename, expected_size):
+def preprocess_images(filedir, filenames, datafilename, expected_dim, max_value, filter_threshold):
     processname = multiprocessing.current_process().name
     datafile = tables.open_file(datafilename, mode='w')
-    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
+    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=expected_dim), (0,), 'dream')
     total = len(filenames)
     count = 0
     for f in filenames:
-        data.append(preprocess_image(os.path.join(filedir, f), expected_size))
+        data.append(preprocess_image(os.path.join(filedir, f), expected_dim[1]))
         count += 1
         if count >= 10 and count % 10 == 0:
             print('{}: {}/{}'.format(processname, count, total))
@@ -45,9 +45,9 @@ def preprocess_images(filedir, filenames, datafilename, expected_size):
 
 
 # preprocess image and return vectorized value
-def preprocess_image(filename, expected_size):
+def preprocess_image(filename, expected_size, max_value, filter_threshold):
     dcm = dicom.read_file(filename)
-    m = center_crop_resize_filter(dcm.pixel_array, expected_size)
+    m = center_crop_resize_filter(dcm.pixel_array, expected_size, max_value, filter_threshold)
     return np.array([[m, m, m]])
 
 
@@ -179,7 +179,7 @@ if __name__ == '__main__':
         tmp_names.append(os.path.join(data_outfile_dir, 'tmp{}.h5'.format(i)))
         start = i * chunk_size
         end = start + chunk_size
-        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i], EXPECTED_SIZE))
+        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i], EXPECTED_DIM, MAX_VALUE, FILTER_THRESHOLD))
         p.start()
         processes.append(p)
     # wait all processes to complete
