@@ -70,7 +70,7 @@ def center_crop_resize_filter(dat, expected_size, max_value, filter_threshold):
     # scaled to 0..1
     norm = filtered * 1.0 / max_value
     # reduce low pixel to zero
-    m[m < filter_threshold] = 0
+    norm[norm < filter_threshold] = 0
     return norm
 
 
