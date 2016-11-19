@@ -36,7 +36,7 @@ def preprocess_images(filedir, filenames, datafilename, expected_dim, max_value,
     total = len(filenames)
     count = 0
     for f in filenames:
-        data.append(preprocess_image(os.path.join(filedir, f), expected_dim[1]))
+        data.append(preprocess_image(os.path.join(filedir, f), expected_dim[1], max_value, filter_threshold))
         count += 1
         if count >= 10 and count % 10 == 0:
             print('{}: {}/{}'.format(processname, count, total))
