@@ -1,25 +1,24 @@
 # Accessing DCM image properties
-
 import dicom
+import cv2
 import numpy as np
 import warnings
 import matplotlib.pyplot as plt
 from dicom.datadict import all_names_for_tag
-from scipy import ndimage
 
 
 # center crop non-zero and downsample to EXPECTED_SIZE
-def center_crop_resize(dat, expected_size, max_value):
+def center_crop_resize_filter(dat, expected_size, max_value):
     cropped = crop(dat)
     start = cropped.shape[0] / 2 - (cropped.shape[1] / 2)
     end = start + cropped.shape[1]
     cropped = cropped[start:end, :]
-    scale = expected_size * 1.0 / cropped.shape[1]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        resized = ndimage.interpolation.zoom(cropped, scale, order=3, prefilter=True)
-        assert resized.shape == (expected_size, expected_size)
-        norm = resized * 1.0 / max_value
+        resized = cv2.resize(cropped, (expected_size, expected_size))
+    assert resized.shape == (expected_size, expected_size)
+    filtered = cv2.medianBlur(resized, 5)
+    norm = filtered * 1.0 / max_value
     return norm
 
 
@@ -49,8 +48,8 @@ positive_dcm = dicom.read_file("100152.dcm")
 # get image pixels numpy array
 p = crop(positive_dcm.pixel_array)
 n = crop(negative_dcm.pixel_array)
-pt = center_crop_resize(positive_dcm.pixel_array, 224, 4095)
-nt = center_crop_resize(negative_dcm.pixel_array, 224, 4095)
+pt = center_crop_resize_filter(positive_dcm.pixel_array, 224, 4095)
+nt = center_crop_resize_filter(negative_dcm.pixel_array, 224, 4095)
 
 # normalize
 p = p / 4095.0
@@ -59,17 +58,16 @@ n = n / 4095.0
 pt[pt < 0.4] = 0
 nt[nt < 0.4] = 0
 
-# plt.matshow(ndimage.gaussian_filter(pt, 2), 1)
-# plt.matshow(ndimage.gaussian_filter(nt, 2), 2)
-# plt.matshow(ndimage.median_filter(pt, 4), 3)
-# plt.matshow(ndimage.median_filter(nt, 4), 4)
-# plt.show()
+print(p.shape)
+print(n.shape)
+print(pt.shape)
+print(nt.shape)
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
 ax1.imshow(p)
-ax2.imshow(ndimage.median_filter(pt, 4))
+ax2.imshow(pt)
 ax3.imshow(n)
-ax4.imshow(ndimage.median_filter(nt, 4))
+ax4.imshow(nt)
 plt.tight_layout()
 plt.show()
 

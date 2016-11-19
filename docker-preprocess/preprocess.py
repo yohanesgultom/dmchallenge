@@ -14,7 +14,7 @@ import warnings
 import pickle
 import math
 import multiprocessing
-from scipy import ndimage
+import cv2
 
 # config
 FILTER_THRESHOLD = 0.4
@@ -29,14 +29,14 @@ MAX_VALUE = 4095
 
 
 # preprocess images and append it to a h5 file
-def preprocess_images(filedir, filenames, datafilename):
+def preprocess_images(filedir, filenames, datafilename, expected_size):
     processname = multiprocessing.current_process().name
     datafile = tables.open_file(datafilename, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     total = len(filenames)
     count = 0
     for f in filenames:
-        data.append(preprocess_image(os.path.join(filedir, f)))
+        data.append(preprocess_image(os.path.join(filedir, f), expected_size))
         count += 1
         if count >= 10 and count % 10 == 0:
             print('{}: {}/{}'.format(processname, count, total))
@@ -45,17 +45,14 @@ def preprocess_images(filedir, filenames, datafilename):
 
 
 # preprocess image and return vectorized value
-def preprocess_image(filename):
+def preprocess_image(filename, expected_size):
     dcm = dicom.read_file(filename)
-    m = center_crop_resize(dcm.pixel_array)
-    # reduce low pixel to zero
-    m[m < FILTER_THRESHOLD] = 0
-    m = ndimage.median_filter(m, MEDIAN_FILTER)
+    m = center_crop_resize_filter(dcm.pixel_array, expected_size)
     return np.array([[m, m, m]])
 
 
 # center crop non-zero and downsample to EXPECTED_SIZE
-def center_crop_resize(dat):
+def center_crop_resize_filter(dat, expected_size, max_value, filter_threshold):
     # crop zeros (black parts)
     cropped = crop(dat)
     # center crop:
@@ -64,13 +61,16 @@ def center_crop_resize(dat):
     end = start + cropped.shape[1]
     cropped = cropped[start:end, :]
     # resize (downsample)
-    scale = EXPECTED_SIZE * 1.0 / cropped.shape[1]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        resized = ndimage.interpolation.zoom(cropped, scale, order=3, prefilter=True)
-        assert resized.shape == (EXPECTED_SIZE, EXPECTED_SIZE)
-        # scaled to 0..1
-        norm = resized * 1.0 / MAX_VALUE
+        resized = cv2.resize(cropped, (expected_size, expected_size))
+    assert resized.shape == (expected_size, expected_size)
+    # filter
+    filtered = cv2.medianBlur(resized, 5)
+    # scaled to 0..1
+    norm = filtered * 1.0 / max_value
+    # reduce low pixel to zero
+    m[m < filter_threshold] = 0
     return norm
 
 
@@ -179,7 +179,7 @@ if __name__ == '__main__':
         tmp_names.append(os.path.join(data_outfile_dir, 'tmp{}.h5'.format(i)))
         start = i * chunk_size
         end = start + chunk_size
-        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i]))
+        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i], EXPECTED_SIZE))
         p.start()
         processes.append(p)
     # wait all processes to complete

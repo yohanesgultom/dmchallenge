@@ -14,12 +14,15 @@ if __name__ == '__main__':
     val_acc = []
     with open(logfilepath, 'r') as logfile:
         for line in logfile:
-            epoch_end = re.match(r'.* loss: (\d+\.\d*) - acc: (\d+\.\d*) - val_loss: (\d+\.\d*) - val_acc: (\d+\.\d*).*', line, re.M | re.I)
+            epoch_end = re.match(r'.* loss: (\d+\.[-e\d]*) - acc: (\d+\.[-e\d]*) - val_loss: (\d+\.[-e\d]*) - val_acc: (\d+\.[-e\d]*).*', line, re.M | re.I)
             if epoch_end:
                 loss.append(float(epoch_end.group(1)))
                 acc.append(float(epoch_end.group(2)))
                 val_loss.append(float(epoch_end.group(3)))
                 val_acc.append(float(epoch_end.group(4)))
+
+    print(len(loss))
+
     filename = os.path.basename(logfilepath)
     f1_title = filename + ' loss & accuracy'
     f1 = plt.figure(f1_title)
