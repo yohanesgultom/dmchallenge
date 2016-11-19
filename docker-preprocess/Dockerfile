@@ -9,6 +9,7 @@ RUN apt-get update \
     git \
     ca-certificates \
     time \
+    libglib2.0-0 \
   && rm -rf /var/lib/apt/lists/*
 
 RUN curl -qsSLkO \
