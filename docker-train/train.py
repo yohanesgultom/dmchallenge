@@ -8,6 +8,7 @@ from __future__ import print_function
 import numpy as np
 import sys
 import tables
+import keras.backend as K
 from keras.models import Sequential, Model
 from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout
@@ -18,29 +19,41 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 30
+BATCH_SIZE = 10
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 30
+# NB_EPOCH_SMALL_DATA = 30
+NB_EPOCH_SMALL_DATA = 1
 NB_EPOCH_LARGE_DATA = 10
 # CLASS_WEIGHT = {0: 0.07, 1: 1.0}
 CLASS_WEIGHT = {0: 1.0, 1: 1.0}
 
 # dataset
-DATASET_BATCH_SIZE = 1000
+# DATASET_BATCH_SIZE = 1000
+DATASET_BATCH_SIZE = 100
 
 # global consts
 EXPECTED_SIZE = 224
 EXPECTED_CHANNELS = 3
 EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
-MODEL_PATH = 'model_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
+MODEL_PATH = 'weights_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 
-def dataset_generator(X, Y):
-    for i in range(X.nrows):
-        X = dataset.data[i]
-        Y = dataset.labels[i]
-        yield(X, Y)
+def dataset_generator(dataset, batch_size):
+    while True:
+        for i in range(dataset.data.nrows):
+            X = dataset.data[i: i + batch_size]
+            Y = dataset.labels[i: i + batch_size]
+            yield(X, Y)
 
+
+def confusion(y_true, y_pred):
+    y_pred_pos = K.round(K.clip(y_pred, 0, 1))
+    y_pred_neg = 1 - y_pred_pos
+    y_pos = K.round(K.clip(y_true, 0, 1))
+    y_neg = 1 - y_pos
+    tp = K.sum(y_pos * y_pred_pos) / K.sum(y_pos)
+    tn = K.sum(y_neg * y_pred_neg) / K.sum(y_neg)
+    return {'true_pos': tp, 'true_neg': tn}
 
 # command line arguments
 dataset_file = sys.argv[1]
@@ -79,7 +92,7 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['accuracy', confusion])
 # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
 # model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -87,36 +100,16 @@ model.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['accuracy'])
 num_rows = dataset.data.nrows
 if num_rows > DATASET_BATCH_SIZE:
     # batch training
-    num_iterate = num_rows / DATASET_BATCH_SIZE
-    print('Training model using {} data in batch of {}'.format(num_rows, DATASET_BATCH_SIZE))
-    for e in range(NB_EPOCH):
-        print('Epoch {}/{}'.format(e + 1, NB_EPOCH))
-        for i in range(num_iterate):
-            print('Data batch {}/{}'.format(i + 1, num_iterate))
-            begin = i * DATASET_BATCH_SIZE
-            end = begin + DATASET_BATCH_SIZE
-            X = dataset.data[begin:end]
-            Y = dataset.labels[begin:end]
-            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
-            model.fit(X_train, Y_train,
-                      batch_size=BATCH_SIZE,
-                      nb_epoch=1,
-                      validation_data=(X_test, Y_test),
-                      shuffle=True,
-                      verbose=verbosity,
-                      class_weight=CLASS_WEIGHT)
+    model.fit_generator(
+        dataset_generator(dataset, BATCH_SIZE),
+        samples_per_epoch=num_rows,
+        nb_epoch=NB_EPOCH,
+        class_weight=CLASS_WEIGHT
+    )
     # batch evaluate
     print('Evaluating')
-    accuracies = []
-    for i in range(num_iterate):
-        begin = i * DATASET_BATCH_SIZE
-        end = begin + DATASET_BATCH_SIZE
-        X = dataset.data[begin:end]
-        Y = dataset.labels[begin:end]
-        s = model.evaluate(X, Y)
-        accuracies.append(s[1])
-    score = sum(accuracies) / float(len(accuracies))
-    print('{}: {}%'.format(model.metrics_names[1], score * 100))
+    score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows)
+    print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 else:
     # one-go training
@@ -133,7 +126,7 @@ else:
 
     # evaluating
     print('Evaluating')
-    score = model.evaluate(X_test, Y_test)
+    score = model.evaluate(X, Y)
     print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 # saving model
