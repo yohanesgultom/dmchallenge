@@ -23,8 +23,8 @@ BATCH_SIZE = 10
 NB_SMALL = 3000
 NB_EPOCH_SMALL_DATA = 30
 NB_EPOCH_LARGE_DATA = 10
-# CLASS_WEIGHT = {0: 0.07, 1: 1.0}
-CLASS_WEIGHT = {0: 1.0, 1: 1.0}
+CLASS_WEIGHT_500 = {0: 0.07, 1: 1.0}
+CLASS_WEIGHT_300K = {0: 0.004, 1: 1.0}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -49,8 +49,8 @@ def confusion(y_true, y_pred):
     y_pred_neg = 1 - y_pred_pos
     y_pos = K.round(K.clip(y_true, 0, 1))
     y_neg = 1 - y_pos
-    tp = K.sum(y_pos * y_pred_pos) / K.sum(y_pos)
-    tn = K.sum(y_neg * y_pred_neg) / K.sum(y_neg)
+    tp = K.sum(y_pos * y_pred_pos) / (K.sum(y_pos) + K.epsilon())
+    tn = K.sum(y_neg * y_pred_neg) / (K.sum(y_neg) + K.epsilon())
     return {'true_pos': tp, 'true_neg': tn}
 
 # command line arguments
@@ -64,11 +64,17 @@ datafile = tables.open_file(dataset_file, mode='r')
 dataset = datafile.root
 print(dataset.data[:].shape)
 
-# determine epoch based on data size
+# determine training params based on data size
 if dataset.data[:].shape[0] <= NB_SMALL:
     NB_EPOCH = NB_EPOCH_SMALL_DATA
+    CLASS_WEIGHT = CLASS_WEIGHT_500
 else:
     NB_EPOCH = NB_EPOCH_LARGE_DATA
+    CLASS_WEIGHT = CLASS_WEIGHT_300K
+
+print('BATCH_SIZE: {}'.format(BATCH_SIZE))
+print('NB_EPOCH: {}'.format(NB_EPOCH))
+print('CLASS_WEIGHT: {}'.format(CLASS_WEIGHT))
 
 # setup model
 print('Preparing model')

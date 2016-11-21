@@ -7,4 +7,4 @@
 
 source config
 
-/usr/bin/time python train.py "/preprocessedData/dataset.h5" "/modelState/${modelname}.h5" 0
+/usr/bin/time python train.py "/preprocessedData/dataset.h5" "/modelState/${modelname}.h5" 2
