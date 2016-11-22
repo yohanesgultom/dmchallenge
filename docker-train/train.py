@@ -9,6 +9,8 @@ import numpy as np
 import sys
 import tables
 import keras.backend as K
+import json
+import os
 from keras.models import Sequential, Model
 from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout
@@ -21,11 +23,8 @@ from datetime import datetime
 # training parameters
 BATCH_SIZE = 10
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 30
+NB_EPOCH_SMALL_DATA = 10
 NB_EPOCH_LARGE_DATA = 10
-CLASS_WEIGHT_500 = {0: 1.0, 1: 1.0}
-# CLASS_WEIGHT_500 = {0: 0.07, 1: 1.0}
-CLASS_WEIGHT_300K = {0: 0.004, 1: 1.0}
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -34,7 +33,7 @@ DATASET_BATCH_SIZE = 1000
 EXPECTED_SIZE = 224
 EXPECTED_CHANNELS = 3
 EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
-MODEL_PATH = 'weights_{}.h5'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
+MODEL_PATH = 'model_{}.zip'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 
 def dataset_generator(dataset, batch_size):
@@ -68,10 +67,12 @@ print(dataset.data[:].shape)
 # determine training params based on data size
 if dataset.data[:].shape[0] <= NB_SMALL:
     NB_EPOCH = NB_EPOCH_SMALL_DATA
-    CLASS_WEIGHT = CLASS_WEIGHT_500
 else:
     NB_EPOCH = NB_EPOCH_LARGE_DATA
-    CLASS_WEIGHT = CLASS_WEIGHT_300K
+
+# set class_weight dynamically
+ratio = dataset.ratio[0]
+CLASS_WEIGHT = {0: ratio[0], 1: ratio[1]}
 
 print('BATCH_SIZE: {}'.format(BATCH_SIZE))
 print('NB_EPOCH: {}'.format(NB_EPOCH))
@@ -112,10 +113,6 @@ if num_rows > DATASET_BATCH_SIZE:
         class_weight=CLASS_WEIGHT,
         verbose=verbosity
     )
-    # batch evaluate
-    print('Evaluating')
-    score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows, verbose=verbosity)
-    print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 else:
     # one-go training
@@ -130,16 +127,21 @@ else:
               verbose=verbosity,
               class_weight=CLASS_WEIGHT)
 
-    # evaluating
-    print('Evaluating')
-    score = model.evaluate(X, Y, verbose=verbosity)
-    print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
-
-# saving model
+# saving model weights and architecture only
+# to save space
 print('Saving model')
-# model.save(model_file)
-# save weights only to save space
-model.save_weights(model_file)
+model_name = os.path.basename(model_file)
+model_path = os.path.splitext(model_file)[0]
+weights_file = model_path + '.weights.h5'
+arch_file = model_path + '.arch.json'
+model.save_weights(weights_file)
+with open(arch_file, 'w') as outfile:
+    json.dump(model.to_json(), outfile)
+
+# batch evaluate
+print('Evaluating')
+score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows)
+print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 # close dataset
 datafile.close()

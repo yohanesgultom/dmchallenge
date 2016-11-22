@@ -117,6 +117,7 @@ if __name__ == '__main__':
     datafile = tables.open_file(data_outfile, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     labels = datafile.create_earray(datafile.root, 'labels', tables.UInt8Atom(shape=(EXPECTED_CLASS)), (0,), 'dream')
+    ratio = datafile.create_earray(datafile.root, 'ratio', tables.Float32Atom(shape=(2,)), (0,), 'dream')
 
     # read metadata
     metadata = {}
@@ -169,6 +170,11 @@ if __name__ == '__main__':
                 stat['positive'] += 1
             else:
                 stat['negative'] += 1
+
+    # calculate ratio positive : negative
+    postive_ratio = stat['positive'] * 1.0 / stat['negative']
+    ratio.append(np.array([[postive_ratio, 1.0]]))
+    assert ratio[:].shape == (1, 2)
 
     # read dicom images parallelly
     cpu_count = int(os.getenv('NUM_CPU_CORES', multiprocessing.cpu_count()))

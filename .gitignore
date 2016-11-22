@@ -3,4 +3,6 @@
 *.pickle
 *.gz
 *.log
+*.zip
+*.json
 predictions.tsv
