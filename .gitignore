@@ -4,5 +4,5 @@
 *.gz
 *.log
 *.zip
-*.json
+*.arch.json
 predictions.tsv
