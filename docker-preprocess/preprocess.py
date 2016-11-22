@@ -30,6 +30,7 @@ MAX_VALUE = 4095
 
 # preprocess images and append it to a h5 file
 def preprocess_images(filedir, filenames, datafilename, expected_dim, max_value, filter_threshold):
+    ten_percent = int(round(len(filenames) / 10))
     processname = multiprocessing.current_process().name
     datafile = tables.open_file(datafilename, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=expected_dim), (0,), 'dream')
@@ -38,7 +39,7 @@ def preprocess_images(filedir, filenames, datafilename, expected_dim, max_value,
     for f in filenames:
         data.append(preprocess_image(os.path.join(filedir, f), expected_dim[1], max_value, filter_threshold))
         count += 1
-        if count >= 10 and count % 10 == 0:
+        if count >= ten_percent and count % ten_percent == 0:
             print('{}: {}/{}'.format(processname, count, total))
     print('{}: {}/{}'.format(processname, count, total))
     datafile.close()
