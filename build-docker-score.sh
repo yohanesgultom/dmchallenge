@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source config &&
-cd docker-train &&
-docker build -t ${trainimage} . &&
+source config
+cd docker-score
+cp . ../docker-preprocess/preprocess.py
+docker build -t ${scoreimage} .
 cd ..

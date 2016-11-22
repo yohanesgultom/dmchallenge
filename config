@@ -9,3 +9,4 @@ preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
 trainname="mik2015-simple-cnn-vgg16"
 trainimage="${dockerurl}/${synapseid}/${trainname}"
 
+scoreimage="mik2015-keras-score"

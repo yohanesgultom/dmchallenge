@@ -5,4 +5,5 @@
 *.log
 *.zip
 *.arch.json
+*.pyc
 predictions.tsv

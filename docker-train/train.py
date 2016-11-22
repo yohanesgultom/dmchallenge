@@ -23,7 +23,7 @@ from datetime import datetime
 # training parameters
 BATCH_SIZE = 10
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 10
+NB_EPOCH_SMALL_DATA = 2
 NB_EPOCH_LARGE_DATA = 10
 
 # dataset
@@ -72,11 +72,11 @@ else:
 
 # set class_weight dynamically
 ratio = dataset.ratio[0]
-CLASS_WEIGHT = {0: ratio[0], 1: ratio[1]}
+class_weight = {0: ratio[0], 1: ratio[1]}
 
 print('BATCH_SIZE: {}'.format(BATCH_SIZE))
 print('NB_EPOCH: {}'.format(NB_EPOCH))
-print('CLASS_WEIGHT: {}'.format(CLASS_WEIGHT))
+print('class_weight: {}'.format(class_weight))
 
 # setup model
 print('Preparing model')
@@ -88,7 +88,6 @@ x = Dropout(0.5)(x)
 x = Dense(4096, activation='relu')(x)
 x = Dropout(0.5)(x)
 predictions = Dense(1, activation='sigmoid', init='uniform')(x)
-# predictions = Dense(1, activation='softmax')(x)
 
 # this is the model we will train
 model = Model(input=base_model.input, output=predictions)
@@ -98,9 +97,8 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['accuracy', confusion])
-# sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-# model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
+sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy', confusion])
 
 # training model
 num_rows = dataset.data.nrows
@@ -110,7 +108,7 @@ if num_rows > DATASET_BATCH_SIZE:
         dataset_generator(dataset, BATCH_SIZE),
         samples_per_epoch=num_rows,
         nb_epoch=NB_EPOCH,
-        class_weight=CLASS_WEIGHT,
+        class_weight=class_weight,
         verbose=verbosity
     )
 
@@ -125,7 +123,7 @@ else:
               validation_data=(X_test, Y_test),
               shuffle=True,
               verbose=verbosity,
-              class_weight=CLASS_WEIGHT)
+              class_weight=class_weight)
 
 # saving model weights and architecture only
 # to save space
@@ -141,7 +139,8 @@ with open(arch_file, 'w') as outfile:
 # batch evaluate
 print('Evaluating')
 score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows)
-print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
+for i in range(1, len(model.metrics_names)):
+    print('{}: {}%'.format(model.metrics_names[i], score[i] * 100))
 
 # close dataset
 datafile.close()
