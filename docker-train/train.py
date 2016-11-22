@@ -23,7 +23,8 @@ BATCH_SIZE = 10
 NB_SMALL = 3000
 NB_EPOCH_SMALL_DATA = 30
 NB_EPOCH_LARGE_DATA = 10
-CLASS_WEIGHT_500 = {0: 0.07, 1: 1.0}
+CLASS_WEIGHT_500 = {0: 1.0, 1: 1.0}
+# CLASS_WEIGHT_500 = {0: 0.07, 1: 1.0}
 CLASS_WEIGHT_300K = {0: 0.004, 1: 1.0}
 
 # dataset
@@ -108,11 +109,12 @@ if num_rows > DATASET_BATCH_SIZE:
         dataset_generator(dataset, BATCH_SIZE),
         samples_per_epoch=num_rows,
         nb_epoch=NB_EPOCH,
-        class_weight=CLASS_WEIGHT
+        class_weight=CLASS_WEIGHT,
+        verbose=verbosity
     )
     # batch evaluate
     print('Evaluating')
-    score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows)
+    score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows, verbose=verbosity)
     print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 else:
@@ -130,7 +132,7 @@ else:
 
     # evaluating
     print('Evaluating')
-    score = model.evaluate(X, Y)
+    score = model.evaluate(X, Y, verbose=verbosity)
     print('{}: {}%'.format(model.metrics_names[1], score[1] * 100))
 
 # saving model

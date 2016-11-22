@@ -171,7 +171,7 @@ if __name__ == '__main__':
                 stat['negative'] += 1
 
     # read dicom images parallelly
-    cpu_count = os.getenv('NUM_CPU_CORES', multiprocessing.cpu_count())
+    cpu_count = int(os.getenv('NUM_CPU_CORES', multiprocessing.cpu_count()))
     chunk_size = int(math.ceil(len(filenames) * 1.0 / cpu_count))
     tmp_names = []
     processes = []

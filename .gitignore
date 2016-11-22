@@ -3,3 +3,4 @@
 *.pickle
 *.gz
 *.log
+predictions.tsv
