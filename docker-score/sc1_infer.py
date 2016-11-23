@@ -18,7 +18,6 @@ model = model_from_json(arch_file)
 model.load_weights(weights_file)
 
 # predict images in crosswalk
-# predictions = [('1', 'L', '0.99'), ('1', 'L', '0.99'), ('1', 'L', '0.99'), ('1', 'R', '0.88')]
 predictions = []
 with open(crosswalk_file, 'rb') as tsvin:
     crosswalk = csv.reader(tsvin, delimiter='\t')
@@ -28,12 +27,15 @@ with open(crosswalk_file, 'rb') as tsvin:
         dcm_exam_id = row[1]
         dcm_laterality = row[4]
         dcm_filename = row[5]
-        image = preprocess_image(os.path.join(dcm_dir, dcm_filename), EXPECTED_DIM[1], MAX_VALUE, FILTER_THRESHOLD)
-        # TODO
-        
+        data = preprocess_image(os.path.join(dcm_dir, dcm_filename), EXPECTED_DIM[1], MAX_VALUE, FILTER_THRESHOLD)
+        prediction = model.predict(data, verbose=1)
+        print(prediction)
+
+# predictions = [('1', 'L', '0.99'), ('1', 'L', '0.99'), ('1', 'L', '0.99'), ('1', 'R', '0.88')]
+
 # write predictions
-with open(predictions_file, 'wb') as csvfile:
-    spamwriter = csv.writer(csvfile, delimiter='\t')
-    spamwriter.writerow(['subjectId', 'laterality', 'confidence'])
-    for p in predictions:
-        spamwriter.writerow(p)
+# with open(predictions_file, 'wb') as csvfile:
+#     spamwriter = csv.writer(csvfile, delimiter='\t')
+#     spamwriter.writerow(['subjectId', 'laterality', 'confidence'])
+#     for p in predictions:
+#         spamwriter.writerow(p)
