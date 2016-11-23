@@ -134,7 +134,7 @@ weights_file = model_path + '.weights.h5'
 arch_file = model_path + '.arch.json'
 model.save_weights(weights_file)
 with open(arch_file, 'w') as outfile:
-    json.dump(model.to_json(), outfile)
+    outfile.write(model.to_json())
 
 # batch evaluate
 print('Evaluating')

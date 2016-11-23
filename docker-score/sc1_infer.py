@@ -16,7 +16,6 @@ predictions_file = sys.argv[6] if len(sys.argv) > 6 else PREDICTIONS_PATH
 # load model
 with open(arch_file) as f:
     arch_json = f.read()
-    print arch_json
     model = model_from_json(arch_json)
 
 model.load_weights(weights_file)
@@ -33,14 +32,14 @@ with open(crosswalk_file, 'rb') as tsvin:
         dcm_filename = row[5]
         data = preprocess_image(os.path.join(dcm_dir, dcm_filename), EXPECTED_DIM[1], MAX_VALUE, FILTER_THRESHOLD)
         prediction = model.predict(data, verbose=1)
-        print(prediction)
-        break
-
-# predictions = [('1', 'L', '0.99'), ('1', 'L', '0.99'), ('1', 'L', '0.99'), ('1', 'R', '0.88')]
+        predictions.append((dcm_subject_id, dcm_laterality, prediction[0][0]))
 
 # write predictions
-# with open(predictions_file, 'wb') as csvfile:
-#     spamwriter = csv.writer(csvfile, delimiter='\t')
-#     spamwriter.writerow(['subjectId', 'laterality', 'confidence'])
-#     for p in predictions:
-#         spamwriter.writerow(p)
+with open(predictions_file, 'wb') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter='\t')
+    header = ('subjectId', 'laterality', 'confidence')
+    spamwriter.writerow(['subjectId', 'laterality', 'confidence'])
+    print(header)
+    for p in predictions:
+        print(p)
+        spamwriter.writerow(p)
