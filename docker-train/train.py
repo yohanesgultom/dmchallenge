@@ -97,8 +97,8 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy', confusion])
+# sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['accuracy', confusion])
 
 # training model
 num_rows = dataset.data.nrows
