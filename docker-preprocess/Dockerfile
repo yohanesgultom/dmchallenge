@@ -27,7 +27,7 @@ RUN conda install -y \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
-  && pip install --upgrade pydicom
+  && pip install --upgrade pydicom \
   && pip install git+git://github.com/fchollet/keras.git
 
 COPY preprocess.py /preprocess.py
