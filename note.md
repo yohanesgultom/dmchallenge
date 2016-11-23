@@ -115,3 +115,28 @@ sudo nvidia-docker run -it --rm --name train \
     docker.synapse.org/syn7502921/mik2015-simple-cnn-vgg16 \
     /bin/bash train.sh
 ```
+
+for scoring (sub-challenge 1 and 2 respectively)
+
+```
+sudo docker run -it --rm --name score_sc1 \
+    -v ~/dmchallenge/pilot_images:/inferenceData:ro \
+    -v ~/dmchallenge/images_crosswalk_pilot_20160906.tsv:/metadata/images_crosswalk.tsv:ro \
+    -v ~/dmchallenge/modelState:/modelState:ro \
+    -v ~/dmchallenge:/output:rw \
+    -v ~/dmchallenge:/scratch:rw \
+    docker.synapse.org/syn7502921/mik2015-keras-score \
+    /bin/bash sc1_infer.sh
+```
+
+```
+sudo docker run -it --rm --name score_sc2 \
+    -v ~/dmchallenge/pilot_images:/inferenceData:ro \
+    -v ~/dmchallenge/images_crosswalk_pilot_20160906.tsv:/metadata/images_crosswalk.tsv:ro \
+    -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \
+    -v ~/dmchallenge/modelState:/modelState:ro \
+    -v ~/dmchallenge:/output:rw \
+    -v ~/dmchallenge:/scratch:rw \
+    docker.synapse.org/syn7502921/mik2015-keras-score \
+    /bin/bash sc2_infer.sh
+```

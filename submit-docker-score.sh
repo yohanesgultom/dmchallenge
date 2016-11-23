@@ -2,4 +2,4 @@
 
 source config &&
 docker login ${dockerurl} &&
-docker push ${trainimage}
+docker push ${scoreimage}

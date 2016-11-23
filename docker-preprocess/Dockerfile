@@ -20,15 +20,15 @@ RUN curl -qsSLkO \
 ENV PATH=/root/miniconda2/bin:$PATH
 
 RUN conda install -y \
-    pandas \
+    h5py \
     scipy \
     opencv \
-    progressbar \
     pytables \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
   && pip install --upgrade pydicom
+  && pip install git+git://github.com/fchollet/keras.git
 
 COPY preprocess.py /preprocess.py
 COPY preprocess.sh /preprocess.sh
