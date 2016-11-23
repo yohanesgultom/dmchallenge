@@ -40,6 +40,7 @@ COPY .theanorc /root
 
 # copy scoring files
 RUN echo "copy training & test files.."
+COPY preprocess.py /preprocess.py
 COPY sc1_infer.py /sc1_infer.py
 COPY sc1_infer.sh /sc1_infer.sh
 COPY sc2_infer.py /sc2_infer.py
