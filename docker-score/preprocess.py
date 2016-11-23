@@ -18,7 +18,7 @@ import cv2
 
 # config
 FILTER_THRESHOLD = 0.4
-MEDIAN_FILTER = 5
+MEDIAN_FILTER = 4
 
 # expected width/length (assumed square)
 EXPECTED_SIZE = 224
@@ -67,7 +67,7 @@ def center_crop_resize_filter(dat, expected_size, max_value, filter_threshold):
         resized = cv2.resize(cropped, (expected_size, expected_size))
     assert resized.shape == (expected_size, expected_size)
     # filter
-    filtered = cv2.medianBlur(resized, MEDIAN_FILTER)
+    filtered = cv2.medianBlur(resized, 5)
     # scaled to 0..1
     norm = filtered * 1.0 / max_value
     # reduce low pixel to zero
