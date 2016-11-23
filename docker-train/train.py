@@ -23,7 +23,7 @@ from datetime import datetime
 # training parameters
 BATCH_SIZE = 10
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 2
+NB_EPOCH_SMALL_DATA = 20
 NB_EPOCH_LARGE_DATA = 10
 
 # dataset
