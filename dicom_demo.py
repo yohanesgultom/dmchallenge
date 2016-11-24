@@ -6,20 +6,32 @@ import warnings
 import matplotlib.pyplot as plt
 from dicom.datadict import all_names_for_tag
 
+EXPECTED_MAX = 1
+EXPECTED_MIN = -1 * EXPECTED_MAX
+FILTER_THRESHOLD = -0.5
+
+EXPECTED_SIZE = 224
+MAX_VALUE = 4095.0
+MEDIAN_VALUE = MAX_VALUE / 2.0  # 0..MAX_VALUE
+
 
 # center crop non-zero and downsample to EXPECTED_SIZE
-def center_crop_resize_filter(dat, expected_size, max_value):
-    cropped = crop(dat)
-    start = cropped.shape[0] / 2 - (cropped.shape[1] / 2)
-    end = start + cropped.shape[1]
-    cropped = cropped[start:end, :]
+def center_crop_resize_filter(dat, laterality, median, expected_min, expected_max, expected_size, filter_threshold):
+    res = crop(dat)
+    start = res.shape[0] / 2 - (res.shape[1] / 2)
+    end = start + res.shape[1]
+    res = res[start:end, :]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        resized = cv2.resize(cropped, (expected_size, expected_size))
-    assert resized.shape == (expected_size, expected_size)
-    filtered = cv2.medianBlur(resized, 5)
-    norm = filtered * 1.0 / max_value
-    return norm
+        res = cv2.resize(res, (expected_size, expected_size))
+    assert res.shape == (expected_size, expected_size)
+    # res = cv2.medianBlur(res, 5)
+    res = (res - median) / median * expected_max
+    if laterality.upper() == 'R':
+        res = np.fliplr(res)
+    print(res.shape, np.amin(res), np.amax(res))
+    res[res < filter_threshold] = expected_min
+    return res
 
 
 # Crop non-zero rectangle
@@ -39,29 +51,20 @@ def crop(dat):
 
 
 # load dicom
-negative_dcm = dicom.read_file("100151.dcm")
-positive_dcm = dicom.read_file("100152.dcm")
+# negative_dcm = dicom.read_file("100151.dcm")  # Right
+# positive_dcm = dicom.read_file("100152.dcm")  # Left
+positive_dcm = dicom.read_file("100153.dcm")  # Left
+negative_dcm = dicom.read_file("100154.dcm")  # Right
 
 # # get header info
 # print(positive_dcm)
 
 # get image pixels numpy array
-p = crop(positive_dcm.pixel_array)
-n = crop(negative_dcm.pixel_array)
-pt = center_crop_resize_filter(positive_dcm.pixel_array, 224, 4095)
-nt = center_crop_resize_filter(negative_dcm.pixel_array, 224, 4095)
+p = positive_dcm.pixel_array
+n = negative_dcm.pixel_array
 
-# normalize
-p = p / 4095.0
-n = n / 4095.0
-
-pt[pt < 0.4] = 0
-nt[nt < 0.4] = 0
-
-print(p.shape)
-print(n.shape)
-print(pt.shape)
-print(nt.shape)
+pt = center_crop_resize_filter(positive_dcm.pixel_array, "L", MEDIAN_VALUE, EXPECTED_MIN, EXPECTED_MAX, EXPECTED_SIZE, FILTER_THRESHOLD)
+nt = center_crop_resize_filter(negative_dcm.pixel_array, "R", MEDIAN_VALUE, EXPECTED_MIN, EXPECTED_MAX, EXPECTED_SIZE, FILTER_THRESHOLD)
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
 ax1.imshow(p)

@@ -17,27 +17,29 @@ import multiprocessing
 import cv2
 
 # config
-FILTER_THRESHOLD = 0.4
-MEDIAN_FILTER = 4
+EXPECTED_MAX = 100.0
+EXPECTED_MIN = -1 * EXPECTED_MAX
+FILTER_THRESHOLD = -90.0
 
 # expected width/length (assumed square)
 EXPECTED_SIZE = 224
 EXPECTED_CHANNELS = 3
 EXPECTED_DIM = (EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
 EXPECTED_CLASS = 1
-MAX_VALUE = 4095
+MAX_VALUE = 4095.0
+MEDIAN_VALUE = MAX_VALUE / 2.0  # 0..MAX_VALUE
 
 
 # preprocess images and append it to a h5 file
-def preprocess_images(filedir, filenames, datafilename, expected_dim, max_value, filter_threshold):
+def preprocess_images(filedir, filenames, lateralities, datafilename):
     ten_percent = int(round(len(filenames) / 10))
     processname = multiprocessing.current_process().name
     datafile = tables.open_file(datafilename, mode='w')
-    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=expected_dim), (0,), 'dream')
+    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     total = len(filenames)
     count = 0
-    for f in filenames:
-        data.append(preprocess_image(os.path.join(filedir, f), expected_dim[1], max_value, filter_threshold))
+    for i in range(len(filenames)):
+        data.append(preprocess_image(os.path.join(filedir, filenames[i]), lateralities[i]))
         count += 1
         if count >= ten_percent and count % ten_percent == 0:
             print('{}: {}/{}'.format(processname, count, total))
@@ -46,33 +48,28 @@ def preprocess_images(filedir, filenames, datafilename, expected_dim, max_value,
 
 
 # preprocess image and return vectorized value
-def preprocess_image(filename, expected_size, max_value, filter_threshold):
+def preprocess_image(filename, laterality):
     dcm = dicom.read_file(filename)
-    m = center_crop_resize_filter(dcm.pixel_array, expected_size, max_value, filter_threshold)
+    m = center_crop_resize_filter(dcm.pixel_array, laterality)
     return np.array([[m, m, m]])
 
 
 # center crop non-zero and downsample to EXPECTED_SIZE
-def center_crop_resize_filter(dat, expected_size, max_value, filter_threshold):
-    # crop zeros (black parts)
-    cropped = crop(dat)
-    # center crop:
-    # crop by height (y axis) to match width (x axis)
-    start = cropped.shape[0] / 2 - (cropped.shape[1] / 2)
-    end = start + cropped.shape[1]
-    cropped = cropped[start:end, :]
-    # resize (downsample)
+def center_crop_resize_filter(dat, laterality, median=MEDIAN_VALUE, expected_min=EXPECTED_MIN, expected_max=EXPECTED_MAX, expected_size=EXPECTED_SIZE, filter_threshold=FILTER_THRESHOLD):
+    res = crop(dat)
+    start = res.shape[0] / 2 - (res.shape[1] / 2)
+    end = start + res.shape[1]
+    res = res[start:end, :]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        resized = cv2.resize(cropped, (expected_size, expected_size))
-    assert resized.shape == (expected_size, expected_size)
-    # filter
-    filtered = cv2.medianBlur(resized, 5)
-    # scaled to 0..1
-    norm = filtered * 1.0 / max_value
-    # reduce low pixel to zero
-    norm[norm < filter_threshold] = 0
-    return norm
+        res = cv2.resize(res, (expected_size, expected_size))
+    assert res.shape == (expected_size, expected_size)
+    # res = cv2.medianBlur(res, 5)
+    res = (res - median) / median * expected_max
+    if laterality.upper() == 'R':
+        res = np.fliplr(res)
+    res[res < filter_threshold] = expected_min
+    return res
 
 
 # Crop non-zero rectangle
@@ -114,6 +111,9 @@ if __name__ == '__main__':
     data_outfile = sys.argv[5]
     data_outfile_dir = os.path.dirname(os.path.abspath(data_outfile))
 
+    print('Expected min/max: {}'.format((EXPECTED_MIN, EXPECTED_MAX)))
+    print('Filter threshold: {}'.format(FILTER_THRESHOLD))
+
     # pytables file
     datafile = tables.open_file(data_outfile, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
@@ -153,6 +153,7 @@ if __name__ == '__main__':
 
     # read crosswalk
     filenames = []
+    lateralities = []
     stat = {'positive': 0, 'negative': 0}
     with open(crosswalk_file, 'rb') as tsvin:
         crosswalk = csv.reader(tsvin, delimiter='\t')
@@ -160,11 +161,12 @@ if __name__ == '__main__':
         for row in crosswalk:
             dcm_subject_id = row[0]
             dcm_exam_id = row[1]
-            dcm_laterality = row[4]
+            dcm_laterality = row[4].upper()
             dcm_filename = row[5]
             key = row[0] + '_' + row[1]
-            dcm_label = metadata[key]['cancer' + dcm_laterality.upper()]
+            dcm_label = metadata[key]['cancer' + dcm_laterality]
             filenames.append(dcm_filename)
+            lateralities.append(dcm_laterality)
             labels.append(np.array([[dcm_label]]))
             # count labels
             if dcm_label == 1:
@@ -186,7 +188,7 @@ if __name__ == '__main__':
         tmp_names.append(os.path.join(data_outfile_dir, 'tmp{}.h5'.format(i)))
         start = i * chunk_size
         end = start + chunk_size
-        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], tmp_names[i], EXPECTED_DIM, MAX_VALUE, FILTER_THRESHOLD))
+        p = multiprocessing.Process(name=tmp_names[i], target=preprocess_images, args=(dcm_dir, filenames[start:end], lateralities[start:end], tmp_names[i]))
         p.start()
         processes.append(p)
     # wait all processes to complete

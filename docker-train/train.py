@@ -83,11 +83,11 @@ print('Preparing model')
 base_model = VGG16(weights='imagenet', include_top=False, input_tensor=Input(shape=EXPECTED_DIM))
 x = base_model.output
 x = Flatten()(x)
-x = Dense(4096, activation='relu')(x)
+x = Dense(4096, activation='relu', init='uniform')(x)
 x = Dropout(0.5)(x)
 x = Dense(4096, activation='relu')(x)
 x = Dropout(0.5)(x)
-predictions = Dense(1, activation='sigmoid', init='uniform')(x)
+predictions = Dense(1, activation='sigmoid')(x)
 
 # this is the model we will train
 model = Model(input=base_model.input, output=predictions)
@@ -98,7 +98,7 @@ for layer in base_model.layers:
 
 # compile the model (should be done *after* setting layers to non-trainable)
 # sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['accuracy', confusion])
+model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy', confusion])
 
 # training model
 num_rows = dataset.data.nrows
