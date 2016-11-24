@@ -1,4 +1,0 @@
-#!/bin/sh
-
-# vars
-modelname="simple-cnn-vgg16"

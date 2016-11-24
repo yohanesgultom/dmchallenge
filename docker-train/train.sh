@@ -5,6 +5,4 @@
 # /trainingData (read-only) already mounted
 # /metadata (read-only) already mounted
 
-source config
-
 /usr/bin/time python train.py "/preprocessedData/dataset.h5" "/modelState/model.zip" 2
