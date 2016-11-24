@@ -23,7 +23,7 @@ from datetime import datetime
 # training parameters
 BATCH_SIZE = 40
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 10
+NB_EPOCH_SMALL_DATA = 12
 NB_EPOCH_LARGE_DATA = 10
 
 # dataset
@@ -97,7 +97,7 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-sgd = SGD(lr=8e-5, decay=1e-6, momentum=0.9, nesterov=True)
+sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy', confusion])
 
 # training model
