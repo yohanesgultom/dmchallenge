@@ -28,10 +28,10 @@ with open(crosswalk_file, 'rb') as tsvin:
     headers = next(crosswalk, None)
     count = 1
     for row in crosswalk:
+        # no exam id col for testing
         dcm_subject_id = row[0]
-        dcm_exam_id = row[1]
-        dcm_laterality = row[4]
-        dcm_filename = row[5]
+        dcm_laterality = row[3]
+        dcm_filename = row[4]
         data = preprocess_image(os.path.join(dcm_dir, dcm_filename), EXPECTED_DIM[1], MAX_VALUE, FILTER_THRESHOLD)
         prediction = model.predict(data)
         p = (dcm_subject_id, dcm_laterality, prediction[0][0])
