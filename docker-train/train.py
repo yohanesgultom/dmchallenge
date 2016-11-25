@@ -39,8 +39,9 @@ MODEL_PATH = 'model_{}.zip'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 def dataset_generator(dataset, batch_size):
     while True:
         for i in range(dataset.data.nrows):
-            X = dataset.data[i: i + batch_size]
-            Y = dataset.labels[i: i + batch_size]
+            end = i + batch_size if i + batch_size <= dataset.data.nrows else dataset.data.nrows
+            X = dataset.data[i: end]
+            Y = dataset.labels[i: end]
             yield(X, Y)
 
 
