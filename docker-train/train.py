@@ -24,7 +24,7 @@ from datetime import datetime
 BATCH_SIZE = 40
 NB_SMALL = 3000
 NB_EPOCH_SMALL_DATA = 12
-NB_EPOCH_LARGE_DATA = 10
+NB_EPOCH_LARGE_DATA = 7
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -137,10 +137,10 @@ with open(arch_file, 'w') as outfile:
     outfile.write(model.to_json())
 
 # batch evaluate
-print('Evaluating')
-score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows)
-for i in range(1, len(model.metrics_names)):
-    print('{}: {}%'.format(model.metrics_names[i], score[i] * 100))
+# print('Evaluating')
+# score = model.evaluate_generator(dataset_generator(dataset, BATCH_SIZE), num_rows)
+# for i in range(1, len(model.metrics_names)):
+#     print('{}: {}%'.format(model.metrics_names[i], score[i] * 100))
 
 # close dataset
 datafile.close()

@@ -6,9 +6,9 @@ import warnings
 import matplotlib.pyplot as plt
 from dicom.datadict import all_names_for_tag
 
-EXPECTED_MAX = 1
+EXPECTED_MAX = 100
 EXPECTED_MIN = -1 * EXPECTED_MAX
-FILTER_THRESHOLD = -0.5
+FILTER_THRESHOLD = -90.0
 
 EXPECTED_SIZE = 224
 MAX_VALUE = 4095.0

@@ -18,7 +18,7 @@ if __name__ == '__main__':
     val_true_neg = []
     with open(logfilepath, 'r') as logfile:
         for line in logfile:
-            epoch_end = re.match(r'.* loss: (\d+\.[-e\d]*) - acc: (\d+\.[-e\d]*) - true_pos: (\d+\.[-e\d]*) - true_neg: (\d+\.[-e\d]*) - val_loss: (\d+\.[-e\d]*) - val_acc: (\d+\.[-e\d]*) - val_true_pos: (\d+\.[-e\d]*) - val_true_neg: (\d+\.[-e\d]*).*', line, re.M | re.I)
+            epoch_end = re.match(r'.* loss: (\d+\.[-e\d\+]*) - acc: (\d+\.[-e\d\+]*) - true_pos: (\d+\.[-e\d\+]*) - true_neg: (\d+\.[-e\d\+]*) - val_loss: (\d+\.[-e\d\+]*) - val_acc: (\d+\.[-e\d\+]*) - val_true_pos: (\d+\.[-e\d\+]*) - val_true_neg: (\d+\.[-e\d\+]*).*', line, re.M | re.I)
             if epoch_end:
                 loss.append(float(epoch_end.group(1)))
                 acc.append(float(epoch_end.group(2)))
@@ -51,15 +51,22 @@ if __name__ == '__main__':
     ax2.set_title(f2_title)
     ax2.legend(['val_loss', 'val_acc'], loc='upper right')
 
-    f3_title = filename + ' true_pos & true_neg'
+    f3_title = filename + ' true positive & true negative'
     f3 = plt.figure(f3_title)
     ax3 = f3.add_subplot(111)
     ax3.plot(true_pos)
     ax3.plot(true_neg)
-    ax3.plot(val_true_pos)
-    ax3.plot(val_true_neg)
     ax3.set_xlabel('Epoch')
     ax3.set_title(f3_title)
-    ax3.legend(['true_pos', 'true_neg', 'val_true_pos', 'val_true_neg'], loc='upper right')
+    ax3.legend(['true_pos', 'true_neg'], loc='upper right')
+
+    f4_title = filename + ' validation true positive & true negative'
+    f4 = plt.figure(f4_title)
+    ax4 = f4.add_subplot(111)
+    ax4.plot(val_true_pos)
+    ax4.plot(val_true_neg)
+    ax4.set_xlabel('Epoch')
+    ax4.set_title(f4_title)
+    ax4.legend(['val_true_pos', 'val_true_neg'], loc='upper right')
 
     plt.show()
