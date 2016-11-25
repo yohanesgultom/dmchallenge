@@ -43,13 +43,9 @@ COPY train.py /train.py
 COPY train.sh /train.sh
 COPY test.py /test.py
 COPY test.sh /test.sh
-COPY config /config
 
 RUN echo "chmod training & test files.."
-RUN chmod 777 /train.py
-RUN chmod 777 /train.sh
-RUN chmod 777 /test.py
-RUN chmod 777 /test.sh
-RUN chmod 777 /config
+RUN chmod 777 /*.py
+RUN chmod 777 /*.sh
 
 RUN echo "complete."
