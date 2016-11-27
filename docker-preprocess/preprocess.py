@@ -202,11 +202,11 @@ if __name__ == '__main__':
         datafile.close()
         os.remove(f)
 
-    print(data[:].shape)
-    print(labels[:].shape)
+    print((data.nrows, ) + data[0].shape)
+    print((labesl.nrows, ) + labels[0].shape)
     print(stat)
-    assert data[:].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
-    assert labels[:].shape == (len(filenames), EXPECTED_CLASS)
+    assert (data.nrows, ) + data[0].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
+    assert (labesl.nrows, ) + labels[0].shape == (len(filenames), EXPECTED_CLASS)
 
     # save metadata
     with open(meta_outfile, 'wb') as handle:
