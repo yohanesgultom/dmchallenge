@@ -38,12 +38,14 @@ MODEL_PATH = 'model_{}.zip'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 def dataset_generator(dataset, batch_size):
     while True:
-        for i in range(dataset.data.nrows):
-            end = i + batch_size if i + batch_size <= dataset.data.nrows else dataset.data.nrows
-            X = dataset.data[i: end]
-            Y = dataset.labels[i: end]
+        i = 0
+        while i < dataset.data.nrows:
+            end = i + batch_size
+            X = dataset.data[i:end]
+            Y = dataset.labels[i:end]
+            i = end
             yield(X, Y)
-
+            
 
 def confusion(y_true, y_pred):
     y_pred_pos = K.round(K.clip(y_pred, 0, 1))
