@@ -1,3 +1,9 @@
+'''
+Use trained model to predict image in crosswalk file
+GPU run command:
+    THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python sc1_infer.py <in:dcm dir> <out:temp output dir> <in:crosswalk file> <in:model architecture json file> <in:model weights h5 file> <out:prediction result tsv>
+
+'''
 import sys
 import os
 import csv
@@ -22,7 +28,8 @@ model.load_weights(weights_file)
 
 # predict images in crosswalk
 print('Predicting image by image')
-predictions = []
+predictions = {}
+prediction_index = []
 with open(crosswalk_file, 'rb') as tsvin:
     crosswalk = csv.reader(tsvin, delimiter='\t')
     headers = next(crosswalk, None)
@@ -32,11 +39,20 @@ with open(crosswalk_file, 'rb') as tsvin:
         dcm_subject_id = row[0]
         dcm_laterality = row[3]
         dcm_filename = row[4]
-        data = preprocess_image(os.path.join(dcm_dir, dcm_filename), EXPECTED_DIM[1], MAX_VALUE, FILTER_THRESHOLD)
+        data = preprocess_image(os.path.join(dcm_dir, dcm_filename), dcm_laterality)
         prediction = model.predict(data)
-        p = (dcm_subject_id, dcm_laterality, prediction[0][0])
-        print('{} {}'.format(count, p))
-        predictions.append(p)
+        # collect predictions based on subjectId and laterality
+        # to handle duplications
+        key = '{}_{}'.format(dcm_subject_id, dcm_laterality)
+        if key not in predictions:
+            predictions[key] = {
+                'id': dcm_subject_id,
+                'lat': dcm_laterality,
+                'p': []
+            }
+            # maintain order by storing index
+            prediction_index.append(key)
+        predictions[key]['p'].append(prediction[0][0])
         count += 1
 
 # write predictions
@@ -45,7 +61,11 @@ with open(predictions_file, 'wb') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter='\t')
     header = ('subjectId', 'laterality', 'confidence')
     spamwriter.writerow(['subjectId', 'laterality', 'confidence'])
-    for p in predictions:
-        spamwriter.writerow(p)
+    # iterate index to keep order
+    for key in prediction_index:
+        pred = predictions[key]
+        avg = sum(pred['p']) / float(len(pred['p']))
+        row = (pred['id'], pred['lat'], avg)
+        spamwriter.writerow(row)
 
 print('Done.')

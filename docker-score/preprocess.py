@@ -17,9 +17,9 @@ import multiprocessing
 import cv2
 
 # config
-EXPECTED_MAX = 130.0  # -130..130
+EXPECTED_MAX = 100.0
 EXPECTED_MIN = -1 * EXPECTED_MAX
-FILTER_THRESHOLD = -100.0
+FILTER_THRESHOLD = -90.0
 
 # expected width/length (assumed square)
 EXPECTED_SIZE = 224
@@ -35,10 +35,10 @@ def preprocess_images(filedir, filenames, lateralities, datafilename):
     ten_percent = int(round(len(filenames) / 10))
     processname = multiprocessing.current_process().name
     datafile = tables.open_file(datafilename, mode='w')
-    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=expected_dim), (0,), 'dream')
+    data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     total = len(filenames)
     count = 0
-    for i in enumerate(filenames):
+    for i in range(len(filenames)):
         data.append(preprocess_image(os.path.join(filedir, filenames[i]), lateralities[i]))
         count += 1
         if count >= ten_percent and count % ten_percent == 0:
@@ -67,9 +67,7 @@ def center_crop_resize_filter(dat, laterality, median=MEDIAN_VALUE, expected_min
     # res = cv2.medianBlur(res, 5)
     res = (res - median) / median * expected_max
     if laterality.upper() == 'R':
-        print(laterality.upper(), 'flip!')
         res = np.fliplr(res)
-    print(res.shape, np.amin(res), np.amax(res))
     res[res < filter_threshold] = expected_min
     return res
 
@@ -112,6 +110,9 @@ if __name__ == '__main__':
     meta_outfile = sys.argv[4]
     data_outfile = sys.argv[5]
     data_outfile_dir = os.path.dirname(os.path.abspath(data_outfile))
+
+    print('Expected min/max: {}'.format((EXPECTED_MIN, EXPECTED_MAX)))
+    print('Filter threshold: {}'.format(FILTER_THRESHOLD))
 
     # pytables file
     datafile = tables.open_file(data_outfile, mode='w')
@@ -201,11 +202,11 @@ if __name__ == '__main__':
         datafile.close()
         os.remove(f)
 
-    print(data[:].shape)
-    print(labels[:].shape)
+    print((data.nrows, ) + data[0].shape)
+    print((labesl.nrows, ) + labels[0].shape)
     print(stat)
-    assert data[:].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
-    assert labels[:].shape == (len(filenames), EXPECTED_CLASS)
+    assert (data.nrows, ) + data[0].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
+    assert (labesl.nrows, ) + labels[0].shape == (len(filenames), EXPECTED_CLASS)
 
     # save metadata
     with open(meta_outfile, 'wb') as handle:
