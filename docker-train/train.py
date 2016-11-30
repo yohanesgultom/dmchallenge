@@ -21,10 +21,10 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 40
+BATCH_SIZE = 100
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 12
-NB_EPOCH_LARGE_DATA = 7
+NB_EPOCH_SMALL_DATA = 15
+NB_EPOCH_LARGE_DATA = 10
 
 # dataset
 DATASET_BATCH_SIZE = 1000
@@ -45,7 +45,7 @@ def dataset_generator(dataset, batch_size):
             Y = dataset.labels[i:end]
             i = end
             yield(X, Y)
-            
+
 
 def confusion(y_true, y_pred):
     y_pred_pos = K.round(K.clip(y_pred, 0, 1))

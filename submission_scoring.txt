@@ -1,2 +1,2 @@
-model_state=syn7798505
-inference=docker.synapse.org/syn7502921/mik2015-keras-score@sha256:3e5ba41fd38d5c327eaeccbd497e843803e2c7c880eb2abf2e201e4a1a1205d1
+model_state=syn7798989
+inference=docker.synapse.org/syn7502921/mik2015-keras-score@sha256:bc1b58a7d07a370ee83b40bde86165e8b4e4380395b3e6e989f86fdd0c70f96c

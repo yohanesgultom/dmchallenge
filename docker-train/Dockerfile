@@ -39,10 +39,8 @@ COPY .theanorc /root
 
 # copy training and test files
 RUN echo "copy training & test files.."
-COPY train.py /train.py
-COPY train.sh /train.sh
-COPY test.py /test.py
-COPY test.sh /test.sh
+COPY *.py /
+COPY *.sh /
 
 RUN echo "chmod training & test files.."
 RUN chmod 777 /*.py

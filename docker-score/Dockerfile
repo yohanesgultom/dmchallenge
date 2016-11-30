@@ -40,16 +40,11 @@ COPY .theanorc /root
 
 # copy scoring files
 RUN echo "copy training & test files.."
-COPY preprocess.py /preprocess.py
-COPY sc1_infer.py /sc1_infer.py
-COPY sc1_infer.sh /sc1_infer.sh
-COPY sc2_infer.py /sc2_infer.py
-COPY sc2_infer.sh /sc2_infer.sh
+COPY *.py /
+COPY *.sh /
 
 RUN echo "chmod training & test files.."
-RUN chmod 777 /sc1_infer.py
-RUN chmod 777 /sc1_infer.sh
-RUN chmod 777 /sc2_infer.py
-RUN chmod 777 /sc2_infer.sh
+RUN chmod 777 /*.py
+RUN chmod 777 /*.sh
 
 RUN echo "complete."
