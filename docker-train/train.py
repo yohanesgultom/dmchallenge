@@ -17,13 +17,14 @@ from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD, RMSprop
 from keras.applications.vgg16 import VGG16
+from keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 100
+BATCH_SIZE = 5
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 15
+NB_EPOCH_SMALL_DATA = 1
 NB_EPOCH_LARGE_DATA = 10
 
 # dataset
@@ -103,6 +104,9 @@ for layer in base_model.layers:
 sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy', confusion])
 
+# early stopping
+early_stopping_acc = EarlyStopping(monitor='acc', patience=3)
+
 # training model
 num_rows = dataset.data.nrows
 if num_rows > DATASET_BATCH_SIZE:
@@ -112,6 +116,7 @@ if num_rows > DATASET_BATCH_SIZE:
         samples_per_epoch=num_rows,
         nb_epoch=NB_EPOCH,
         class_weight=class_weight,
+        callbacks=[early_stopping_acc],
         verbose=verbosity
     )
 
@@ -126,6 +131,7 @@ else:
               validation_data=(X_test, Y_test),
               shuffle=True,
               verbose=verbosity,
+              callbacks=[early_stopping_acc],
               class_weight=class_weight)
 
 # saving model weights and architecture only
