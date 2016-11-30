@@ -22,9 +22,9 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 5
+BATCH_SIZE = 100
 NB_SMALL = 3000
-NB_EPOCH_SMALL_DATA = 1
+NB_EPOCH_SMALL_DATA = 15
 NB_EPOCH_LARGE_DATA = 10
 
 # dataset
