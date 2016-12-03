@@ -22,13 +22,13 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 100
+BATCH_SIZE = 1000
 NB_SMALL = 3000
 NB_EPOCH_SMALL_DATA = 30
 NB_EPOCH_LARGE_DATA = 20
 
 # dataset
-DATASET_BATCH_SIZE = 1000
+DATASET_BATCH_LIMIT = 1000
 
 # global consts
 EXPECTED_SIZE = 224
@@ -75,6 +75,7 @@ dataset_file = sys.argv[1]
 model_file = sys.argv[2] if len(sys.argv) > 2 else MODEL_PATH
 scratch_dir = sys.argv[3] if len(sys.argv) > 2 else CUR_DIR
 verbosity = int(sys.argv[4]) if len(sys.argv) > 4 else 1
+extract_verbosity = 1 if verbosity == 1 else 0
 
 # loading dataset
 print('Loading train dataset: {}'.format(dataset_file))
@@ -117,7 +118,7 @@ early_stopping_acc = EarlyStopping(monitor='acc', patience=3)
 
 # feature extraction and model training
 num_rows = dataset.data.nrows
-if num_rows > DATASET_BATCH_SIZE:
+if num_rows > DATASET_BATCH_LIMIT:
     # batch feature extraction
     print('Batch feature extraction')
     features_file = tables.open_file(os.path.join(scratch_dir, FEATURES_FILE), mode='w')
@@ -129,7 +130,7 @@ if num_rows > DATASET_BATCH_SIZE:
         data_chunk = dataset.data[i:end]
         label_chunk = dataset.labels[i:end]
         i = end
-        features_data.append(extractor.predict(data_chunk))
+        features_data.append(extractor.predict(data_chunk, verbose=extract_verbosity))
         features_labels.append(label_chunk)
 
     assert features_file.root.data.nrows == num_rows
