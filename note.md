@@ -112,6 +112,7 @@ sudo nvidia-docker run -it --rm --name train \
     -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \
     -v ~/dmchallenge/preprocessed:/preprocessedData:rw \
     -v ~/dmchallenge/modelState:/modelState:rw \
+    -v ~/dmchallenge:/scratch:rw \
     docker.synapse.org/syn7502921/mik2015-simple-cnn-vgg16 \
     /bin/bash train.sh
 ```
