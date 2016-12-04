@@ -8,6 +8,7 @@ import sys
 import os
 import csv
 from keras.models import model_from_json
+from keras.applications.vgg16 import VGG16
 from preprocess import preprocess_image, EXPECTED_DIM, MAX_VALUE, FILTER_THRESHOLD
 
 PREDICTIONS_PATH = 'predictions.tsv'
@@ -19,8 +20,10 @@ arch_file = sys.argv[4]
 weights_file = sys.argv[5]
 predictions_file = sys.argv[6] if len(sys.argv) > 6 else PREDICTIONS_PATH
 
+print('Loading extractor and model')
+# feature extractor
+extractor = VGG16(weights='imagenet', include_top=False)
 # load model
-print('Loading model')
 with open(arch_file) as f:
     arch_json = f.read()
     model = model_from_json(arch_json)
@@ -40,7 +43,8 @@ with open(crosswalk_file, 'rb') as tsvin:
         dcm_laterality = row[3]
         dcm_filename = row[4]
         data = preprocess_image(os.path.join(dcm_dir, dcm_filename), dcm_laterality)
-        prediction = model.predict(data)
+        features = extractor.predict(data)
+        prediction = model.predict(features)
         # collect predictions based on subjectId and laterality
         # to handle duplications
         key = '{}_{}'.format(dcm_subject_id, dcm_laterality)

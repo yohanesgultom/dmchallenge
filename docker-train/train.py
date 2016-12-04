@@ -22,13 +22,11 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 # training parameters
-BATCH_SIZE = 1000
+BATCH_SIZE = 40
+DATASET_BATCH_SIZE = 1000
 NB_SMALL = 3000
 NB_EPOCH_SMALL_DATA = 30
 NB_EPOCH_LARGE_DATA = 20
-
-# dataset
-DATASET_BATCH_LIMIT = 1000
 
 # global consts
 EXPECTED_SIZE = 224
@@ -110,15 +108,15 @@ model.add(Dropout(0.5))
 model.add(Dense(1, activation='sigmoid', init='uniform'))
 
 # compile the model (should be done *after* setting layers to non-trainable)
-sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy', confusion])
+# sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy', confusion])
 
 # early stopping
 early_stopping_acc = EarlyStopping(monitor='acc', patience=3)
 
 # feature extraction and model training
 num_rows = dataset.data.nrows
-if num_rows > DATASET_BATCH_LIMIT:
+if num_rows > DATASET_BATCH_SIZE:
     # batch feature extraction
     print('Batch feature extraction')
     features_file = tables.open_file(os.path.join(scratch_dir, FEATURES_FILE), mode='w')
@@ -126,7 +124,7 @@ if num_rows > DATASET_BATCH_LIMIT:
     features_labels = features_file.create_earray(features_file.root, 'labels', tables.UInt8Atom(shape=(EXPECTED_CLASS)), (0,), 'dream')
     i = 0
     while i < dataset.data.nrows:
-        end = i + BATCH_SIZE
+        end = i + DATASET_BATCH_SIZE
         data_chunk = dataset.data[i:end]
         label_chunk = dataset.labels[i:end]
         i = end
@@ -138,7 +136,7 @@ if num_rows > DATASET_BATCH_LIMIT:
 
     # batch training
     model.fit_generator(
-        dataset_generator(features_file.root, BATCH_SIZE),
+        dataset_generator(features_file.root, DATASET_BATCH_SIZE),
         samples_per_epoch=num_rows,
         nb_epoch=NB_EPOCH,
         class_weight=class_weight,
