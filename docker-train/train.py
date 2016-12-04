@@ -108,8 +108,8 @@ model.add(Dropout(0.5))
 model.add(Dense(1, activation='sigmoid', init='uniform'))
 
 # compile the model (should be done *after* setting layers to non-trainable)
-# sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy', confusion])
+sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy', confusion])
 
 # early stopping
 early_stopping_acc = EarlyStopping(monitor='acc', patience=3)
