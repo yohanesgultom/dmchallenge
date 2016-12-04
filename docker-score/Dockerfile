@@ -37,6 +37,7 @@ RUN mkdir /root/.keras
 RUN mkdir /root/.keras/models
 COPY keras.json /root/.keras
 COPY .theanorc /root
+COPY vgg16_weights_th_dim_ordering_th_kernels_notop.h5 /root/.keras/models
 
 # copy scoring files
 RUN echo "copy training & test files.."
