@@ -82,7 +82,7 @@ if __name__ == '__main__':
     print('Loading train dataset: {}'.format(dataset_file))
     datafile = tables.open_file(dataset_file, mode='r')
     dataset = datafile.root
-    print(dataset.data[:].shape)
+    print((dataset.data.nrows,) + dataset.data[0].shape)
 
     # set class_weight dynamically
     ratio = dataset.ratio[0]
