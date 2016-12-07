@@ -25,7 +25,7 @@ from datetime import datetime
 # training parameters
 BIG_BATCH_SIZE = 1000  # batch size for data > NB_DATA_LIMIT
 SMALL_BATCH_SIZE = 40  # for data <= NB_DATA_LIMIT
-NB_EPOCH = 5
+NB_EPOCH = 50
 NB_DATA_LIMIT = 3000
 
 # global consts
