@@ -1,14 +1,14 @@
 #!/bin/sh
 
-synapseid="syn7502921"
+#synapseid="syn7502921"
+synapseid="syn7821845"
 dockerurl="docker.synapse.org"
 
-preprocessname="mik2015-simple-preprocess"
+preprocessname="simple-preprocess"
 preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
 
-trainname="mik2015-simple-cnn-vgg16"
+trainname="vgg16"
 trainimage="${dockerurl}/${synapseid}/${trainname}"
 
-scorename="mik2015-keras-score"
+scorename="keras-score"
 scoreimage="${dockerurl}/${synapseid}/${scorename}"
-

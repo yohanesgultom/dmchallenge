@@ -19,13 +19,13 @@ from keras.optimizers import SGD, RMSprop
 from keras.applications.vgg16 import VGG16
 from keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
+from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, precision_recall_fscore_support
 from datetime import datetime
 
 # training parameters
 BIG_BATCH_SIZE = 1000  # batch size for data > NB_DATA_LIMIT
 SMALL_BATCH_SIZE = 40  # for data <= NB_DATA_LIMIT
-NB_EPOCH = 30
+NB_EPOCH = 5
 NB_DATA_LIMIT = 3000
 
 # global consts
@@ -189,6 +189,10 @@ if __name__ == '__main__':
     print(cm)
     print('True Positive: {}'.format(cm[1][1] * 1.0 / (cm[1][1] + cm[1][0])))
     print('True Negative: {}'.format(cm[0][0] * 1.0 / (cm[0][0] + cm[0][1])))
+    precision, recall, fbeta, support = precision_recall_fscore_support(Y, predictions)
+    print('Precision: {}'.format(precision))
+    print('Recall: {}'.format(recall))
+    print('F1-Score: {}'.format(fbeta))
 
     # close dataset
     datafile.close()
