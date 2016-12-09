@@ -42,16 +42,19 @@ FEATURES_DIM = (512, 7, 7)
 META_DIM = (15,)
 
 
-def dataset_generator(dataset, batch_size):
+def dataset_generator(dataset, batch_size, label=True):
     while True:
         i = 0
         while i < dataset.data.nrows:
             end = i + batch_size
             X = dataset.data[i:end]
             X_m = dataset.meta[i:end]
-            Y = dataset.labels[i:end]
+            if label:
+                Y = dataset.labels[i:end]
+                yield([X, X_m], Y)
+            else:
+                yield([X, X_m])
             i = end
-            yield([X, X_m], Y)
 
 
 def h5_generator(data, batch_size):
@@ -158,7 +161,7 @@ if __name__ == '__main__':
         verbose=verbosity
     )
 
-    predictions = model.predict_generator(h5_generator(features_file.root.data, TRAIN_BATCH_SIZE), val_samples=num_rows)
+    predictions = model.predict_generator(dataset_generator(features_file.root, TRAIN_BATCH_SIZE, label=False), val_samples=num_rows)
     Y = features_file.root.labels[:]
 
     # close feature file
