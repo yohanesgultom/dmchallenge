@@ -68,8 +68,11 @@ with open(predictions_file, 'wb') as csvfile:
     # iterate index to keep order
     for key in prediction_index:
         pred = predictions[key]
-        avg = sum(pred['p']) / float(len(pred['p']))
-        row = (pred['id'], pred['lat'], avg)
+        # aggregation strategy
+        # confidence = sum(pred['p']) / float(len(pred['p']))  # average
+        confidence = max(pred['p'])  # max
+        # confidence = pred['p'][-1]  # latest
+        row = (pred['id'], pred['lat'], confidence)
         spamwriter.writerow(row)
 
 print('Done.')
