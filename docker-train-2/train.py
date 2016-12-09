@@ -1,5 +1,5 @@
 '''
-Train DM Challenge classifier
+Train DM Challenge classifier for sub-challenge 2 (considering clinical information)
 GPU run command:
     THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python train.py <in:dataset> <out:trained_model>
 
@@ -11,8 +11,9 @@ import tables
 import keras.backend as K
 import json
 import os
+import pickle
 from keras.models import Sequential, Model
-from keras.layers import Input
+from keras.layers import Input, Merge
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD, RMSprop
@@ -23,10 +24,11 @@ from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, pre
 from datetime import datetime
 
 # training parameters
-BIG_BATCH_SIZE = 1000  # batch size for data > NB_DATA_LIMIT
-SMALL_BATCH_SIZE = 40  # for data <= NB_DATA_LIMIT
-NB_EPOCH = 50
-NB_DATA_LIMIT = 3000
+NB_EPOCH = 5
+EXTRACT_BATCH_SIZE = 1000
+TRAIN_BATCH_SIZE = 1000
+SMALL_EXTRACT_BATCH_SIZE = 50
+SMALL_TRAIN_BATCH_SIZE = 10
 
 # global consts
 EXPECTED_SIZE = 224
@@ -37,6 +39,7 @@ MODEL_PATH = 'model.zip'
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 FEATURES_FILE = 'features.h5'
 FEATURES_DIM = (512, 7, 7)
+META_DIM = (15,)
 
 
 def dataset_generator(dataset, batch_size):
@@ -45,9 +48,10 @@ def dataset_generator(dataset, batch_size):
         while i < dataset.data.nrows:
             end = i + batch_size
             X = dataset.data[i:end]
+            X_m = dataset.meta[i:end]
             Y = dataset.labels[i:end]
             i = end
-            yield(X, Y)
+            yield([X, X_m], Y)
 
 
 def h5_generator(data, batch_size):
@@ -95,8 +99,13 @@ if __name__ == '__main__':
     extractor = VGG16(weights='imagenet', include_top=False)
 
     # this is the model we will train
+    vgg16_features = Sequential()
+    vgg16_features.add(Flatten(input_shape=FEATURES_DIM))
+    clinical_features = Sequential()
+    clinical_features.add(Dense(15, input_shape=META_DIM))
+
     model = Sequential()
-    model.add(Flatten(input_shape=FEATURES_DIM))
+    model.add(Merge([vgg16_features, clinical_features], mode='concat'))
     model.add(Dense(4096, activation='tanh'))
     model.add(Dropout(0.5))
     model.add(Dense(4096, activation='tanh'))
@@ -112,59 +121,49 @@ if __name__ == '__main__':
 
     # feature extraction and model training
     num_rows = dataset.data.nrows
-    if num_rows > NB_DATA_LIMIT:
-        # batch feature extraction
-        print('BIG_BATCH_SIZE: {}'.format(BIG_BATCH_SIZE))
-        print('Batch feature extraction')
-        features_file_path = os.path.join(scratch_dir, FEATURES_FILE)
-        features_file = tables.open_file(features_file_path, mode='w')
-        features_data = features_file.create_earray(features_file.root, 'data', tables.Float32Atom(shape=FEATURES_DIM), (0,), 'dream')
-        features_labels = features_file.create_earray(features_file.root, 'labels', tables.UInt8Atom(shape=(EXPECTED_CLASS)), (0,), 'dream')
-        i = 0
-        while i < dataset.data.nrows:
-            end = i + BIG_BATCH_SIZE
-            data_chunk = dataset.data[i:end]
-            label_chunk = dataset.labels[i:end]
-            i = end
-            features_data.append(extractor.predict(data_chunk, verbose=extract_verbosity))
-            features_labels.append(label_chunk)
+    if num_rows < EXTRACT_BATCH_SIZE:
+        EXTRACT_BATCH_SIZE = SMALL_EXTRACT_BATCH_SIZE
+        TRAIN_BATCH_SIZE = SMALL_TRAIN_BATCH_SIZE
 
-        assert features_file.root.data.nrows == num_rows
-        assert features_file.root.labels.nrows == dataset.labels.nrows
+    # batch feature extraction
+    print('EXTRACT_BATCH_SIZE: {}'.format(EXTRACT_BATCH_SIZE))
+    print('TRAIN_BATCH_SIZE: {}'.format(TRAIN_BATCH_SIZE))
+    print('Batch feature extraction')
+    features_file_path = os.path.join(scratch_dir, FEATURES_FILE)
+    features_file = tables.open_file(features_file_path, mode='w')
+    features_data = features_file.create_earray(features_file.root, 'data', tables.Float32Atom(shape=FEATURES_DIM), (0,), 'dream')
+    features_meta = features_file.create_earray(features_file.root, 'meta', tables.Float32Atom(shape=META_DIM), (0,), 'dream')
+    features_labels = features_file.create_earray(features_file.root, 'labels', tables.UInt8Atom(shape=(EXPECTED_CLASS)), (0,), 'dream')
+    i = 0
+    while i < dataset.data.nrows:
+        end = i + EXTRACT_BATCH_SIZE
+        data_chunk = dataset.data[i:end]
+        meta_chunk = dataset.meta[i:end]
+        label_chunk = dataset.labels[i:end]
+        i = end
+        features_data.append(extractor.predict(data_chunk, verbose=extract_verbosity))
+        features_meta.append(meta_chunk)
+        features_labels.append(label_chunk)
 
-        # batch training
-        print('Batch training')
-        model.fit_generator(
-            dataset_generator(features_file.root, BIG_BATCH_SIZE),
-            samples_per_epoch=num_rows,
-            nb_epoch=NB_EPOCH,
-            class_weight=class_weight,
-            verbose=verbosity
-        )
+    assert features_file.root.data.nrows == num_rows
+    assert features_file.root.labels.nrows == dataset.labels.nrows
 
-        predictions = model.predict_generator(h5_generator(features_file.root.data, BIG_BATCH_SIZE), val_samples=num_rows)
-        Y = features_file.root.labels[:]
+    # batch training
+    print('Batch training')
+    model.fit_generator(
+        dataset_generator(features_file.root, TRAIN_BATCH_SIZE),
+        samples_per_epoch=num_rows,
+        nb_epoch=NB_EPOCH,
+        class_weight=class_weight,
+        verbose=verbosity
+    )
 
-        # close feature file
-        features_file.close()
-        os.remove(features_file_path)
+    predictions = model.predict_generator(h5_generator(features_file.root.data, TRAIN_BATCH_SIZE), val_samples=num_rows)
+    Y = features_file.root.labels[:]
 
-    else:
-        # one-go feature extraction and model training
-        print('SMALL_BATCH_SIZE: {}'.format(SMALL_BATCH_SIZE))
-        print('Feature extraction')
-        X = extractor.predict(dataset.data[:], verbose=1)
-        Y = dataset.labels[:]
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
-        print('Training')
-        model.fit(X_train, Y_train,
-                  batch_size=SMALL_BATCH_SIZE,
-                  nb_epoch=NB_EPOCH,
-                  validation_data=(X_test, Y_test),
-                  shuffle=True,
-                  verbose=verbosity,
-                  class_weight=class_weight)
-        predictions = model.predict(X)
+    # close feature file
+    features_file.close()
+    os.remove(features_file_path)
 
     # saving model weights and architecture only
     # to save space

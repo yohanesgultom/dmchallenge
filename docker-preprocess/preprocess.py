@@ -20,6 +20,24 @@ import cv2
 EXPECTED_MAX = 100.0
 EXPECTED_MIN = -1 * EXPECTED_MAX
 FILTER_THRESHOLD = -90.0
+METADATA_NORMALIZER = {
+    'daysSincePreviousExam': {'default': 0, 'cap_max': 1000.0},
+    'age': {'default': 0.0, 'cap_max': 100.0},
+    'implantEver': {'default': 2.0, 'cap_max': 2.0},
+    'implantNow': {'default': 6.0, 'cap_max': 6.0},
+    'bcHistory': {'default': 0.0, 'cap_max': 1.0},
+    'yearsSincePreviousBc': {'default': 0.0, 'cap_max': 20.0},
+    'previousBcLaterality': {'default': 0.0, 'cap_max': 5.0},
+    'reduxHistory': {'default': 2.0, 'cap_max': 2.0},
+    'reduxLaterality': {'default': 5.0, 'cap_max': 5.0},
+    'hrt': {'default': 2.0, 'cap_max': 2.0},
+    'antiestrogen': {'default': 2.0, 'cap_max': 2.0},
+    'firstDegreeWithBc': {'default': 2.0, 'cap_max': 2.0},
+    'firstDegreeWithBc50': {'default': 2.0, 'cap_max': 2.0},
+    'bmi': {'default': 0.0, 'cap_max': 90.0},
+    'race': {'default': 9.0, 'cap_max': 9.0}
+}
+METADATA_SORTED_FIELDS = sorted(METADATA_NORMALIZER)
 
 # expected width/length (assumed square)
 EXPECTED_SIZE = 224
@@ -88,27 +106,47 @@ def crop(dat):
     ]
 
 
-def parse_int(s):
+def normalize_meta(row, index, field):
+    normalizer = METADATA_NORMALIZER[field]
+    if normalizer:
+        val = parse_float(row[index], default=normalizer['default'])
+        return normalize(val, normalizer['cap_max'])
+    else:
+        return EXPECTED_MIN
+
+
+def normalize(val, cap_max, expected_max=EXPECTED_MAX):
+    median = cap_max / 2.0
+    val = val if val <= cap_max else cap_max
+    return (val - median) / median * expected_max
+
+
+def metadata2numpy(met):
+    a = [met[field] for field in METADATA_SORTED_FIELDS]
+    return np.array([a])
+
+
+def parse_int(s, default=0):
     try:
         i = int(s)
         return i
     except ValueError:
-        return 0
+        return default
 
 
-def parse_float(s):
+def parse_float(s, default=0.0):
     try:
         i = float(s)
         return i
     except ValueError:
-        return 0.0
+        return default
+
 
 if __name__ == '__main__':
     dcm_dir = sys.argv[1]
     crosswalk_file = sys.argv[2]
     meta_file = sys.argv[3]
-    meta_outfile = sys.argv[4]
-    data_outfile = sys.argv[5]
+    data_outfile = sys.argv[4]
     data_outfile_dir = os.path.dirname(os.path.abspath(data_outfile))
 
     print('Expected min/max: {}'.format((EXPECTED_MIN, EXPECTED_MAX)))
@@ -118,6 +156,7 @@ if __name__ == '__main__':
     datafile = tables.open_file(data_outfile, mode='w')
     data = datafile.create_earray(datafile.root, 'data', tables.Float32Atom(shape=EXPECTED_DIM), (0,), 'dream')
     labels = datafile.create_earray(datafile.root, 'labels', tables.UInt8Atom(shape=(EXPECTED_CLASS)), (0,), 'dream')
+    meta = datafile.create_earray(datafile.root, 'meta', tables.Float32Atom(shape=(len(METADATA_NORMALIZER))), (0,), 'dream')
     ratio = datafile.create_earray(datafile.root, 'ratio', tables.Float32Atom(shape=(2,)), (0,), 'dream')
 
     # read metadata
@@ -130,25 +169,25 @@ if __name__ == '__main__':
             metadata[key] = {
                 'id': row[0],
                 'examIndex': row[1],
-                'daysSincePreviousExam': parse_int(row[2]),
+                'daysSincePreviousExam': normalize_meta(row, 2, 'daysSincePreviousExam'),
                 'cancerL': parse_int(row[3]),
                 'cancerR': parse_int(row[4]),
                 'invL': parse_int(row[5]),
                 'invR': parse_int(row[6]),
-                'age': parse_int(row[7]),
-                'implantEver': parse_int(row[8]),
-                'implantNow': parse_int(row[9]),
-                'bcHistory': parse_int(row[10]),
-                'yearsSincePreviousBc': parse_float(row[11]),
-                'previousBcLaterality': parse_int(row[12]),
-                'reduxHistory': parse_int(row[13]),
-                'reduxLaterality': parse_int(row[14]),
-                'hrt': parse_int(row[15]),
-                'antiestrogen': parse_int(row[16]),
-                'firstDegreeWithBc': parse_int(row[17]),
-                'firstDegreeWithBc50': parse_int(row[18]),
-                'bmi': parse_float(row[19]),
-                'race': parse_int(row[20])
+                'age': normalize_meta(row, 7, 'age'),
+                'implantEver': normalize_meta(row, 8, 'implantEver'),
+                'implantNow': normalize_meta(row, 9, 'implantNow'),
+                'bcHistory': normalize_meta(row, 10, 'bcHistory'),
+                'yearsSincePreviousBc': normalize_meta(row, 11, 'yearsSincePreviousBc'),
+                'previousBcLaterality': normalize_meta(row, 12, 'previousBcLaterality'),
+                'reduxHistory': normalize_meta(row, 13, 'reduxHistory'),
+                'reduxLaterality': normalize_meta(row, 14, 'reduxLaterality'),
+                'hrt': normalize_meta(row, 15, 'hrt'),
+                'antiestrogen': normalize_meta(row, 16, 'antiestrogen'),
+                'firstDegreeWithBc': normalize_meta(row, 17, 'firstDegreeWithBc'),
+                'firstDegreeWithBc50': normalize_meta(row, 18, 'firstDegreeWithBc50'),
+                'bmi': normalize_meta(row, 19, 'bmi'),
+                'race': normalize_meta(row, 20, 'race')
             }
 
     # read crosswalk
@@ -167,6 +206,7 @@ if __name__ == '__main__':
             dcm_label = metadata[key]['cancer' + dcm_laterality]
             filenames.append(dcm_filename)
             lateralities.append(dcm_laterality)
+            meta.append(metadata2numpy(metadata[key]))
             labels.append(np.array([[dcm_label]]))
             # count labels
             if dcm_label == 1:
@@ -204,13 +244,12 @@ if __name__ == '__main__':
 
     print((data.nrows, ) + data[0].shape)
     print((labels.nrows, ) + labels[0].shape)
+    print((meta.nrows, ) + meta[0].shape)
+    print(METADATA_SORTED_FIELDS)
     print(stat)
     assert (data.nrows, ) + data[0].shape == (len(filenames), EXPECTED_CHANNELS, EXPECTED_SIZE, EXPECTED_SIZE)
     assert (labels.nrows, ) + labels[0].shape == (len(filenames), EXPECTED_CLASS)
-
-    # save metadata
-    with open(meta_outfile, 'wb') as handle:
-        pickle.dump(metadata, handle)
+    assert (meta.nrows, ) + meta[0].shape == (len(filenames), len(METADATA_SORTED_FIELDS))
 
     # close file
     datafile.close()
