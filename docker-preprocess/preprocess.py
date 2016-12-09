@@ -1,6 +1,6 @@
 '''
 Build DM dataset
-Usage: python preprocess.py <in:DM images directory> <in:DM crosswalk file> <in:DM meta file> <out:meta pickle> <out:dataset h5>
+Usage: python preprocess.py <in:DM images directory> <in:DM crosswalk file> <in:DM meta file> <out:dataset h5>
 
 '''
 import dicom
@@ -11,7 +11,6 @@ import numpy as np
 import csv
 import tables
 import warnings
-import pickle
 import math
 import multiprocessing
 import cv2
