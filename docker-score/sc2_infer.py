@@ -28,10 +28,39 @@ with open(arch_file) as f:
 model.load_weights(weights_file)
 
 # predict images in crosswalk
-# TODO use metadata
 print('Predicting image by image and metadata')
+
+metadata = {}
 predictions = {}
 prediction_index = []
+
+# read metadata
+with open(meta_file, 'r') as metain:
+    reader = csv.reader(metain, delimiter='\t')
+    headers = next(reader, None)
+    for row in reader:
+        meta_key = '{}_{}'.format(row[0], row[1])
+        metadata[meta_key] = {
+            'id': row[0],
+            'examIndex': row[1],
+            'daysSincePreviousExam': normalize_meta(row, 2, 'daysSincePreviousExam'),
+            'age': normalize_meta(row, 3, 'age'),
+            'implantEver': normalize_meta(row, 4, 'implantEver'),
+            'implantNow': normalize_meta(row, 5, 'implantNow'),
+            'bcHistory': normalize_meta(row, 6, 'bcHistory'),
+            'yearsSincePreviousBc': normalize_meta(row, 7, 'yearsSincePreviousBc'),
+            'previousBcLaterality': normalize_meta(row, 8, 'previousBcLaterality'),
+            'reduxHistory': normalize_meta(row, 9, 'reduxHistory'),
+            'reduxLaterality': normalize_meta(row, 10, 'reduxLaterality'),
+            'hrt': normalize_meta(row, 11, 'hrt'),
+            'antiestrogen': normalize_meta(row, 12, 'antiestrogen'),
+            'firstDegreeWithBc': normalize_meta(row, 13, 'firstDegreeWithBc'),
+            'firstDegreeWithBc50': normalize_meta(row, 14, 'firstDegreeWithBc50'),
+            'bmi': normalize_meta(row, 15, 'bmi'),
+            'race': normalize_meta(row, 16, 'race')
+        }
+
+# read images by crosswalk and make prediction
 with open(crosswalk_file, 'rb') as tsvin:
     crosswalk = csv.reader(tsvin, delimiter='\t')
     headers = next(crosswalk, None)
@@ -39,32 +68,12 @@ with open(crosswalk_file, 'rb') as tsvin:
     for row in crosswalk:
         # no exam id col for testing
         dcm_subject_id = row[0]
-        dcm_laterality = row[3]
-        dcm_filename = row[4]
+        dcm_exam_index = row[1]
+        dcm_laterality = row[4]
+        dcm_filename = row[5]
         data = preprocess_image(os.path.join(dcm_dir, dcm_filename), dcm_laterality)
-        meta = metadata2numpy({
-            'id': row[0],
-            'examIndex': row[1],
-            'daysSincePreviousExam': normalize_meta(row, 2, 'daysSincePreviousExam'),
-            'cancerL': parse_int(row[3]),
-            'cancerR': parse_int(row[4]),
-            'invL': parse_int(row[5]),
-            'invR': parse_int(row[6]),
-            'age': normalize_meta(row, 7, 'age'),
-            'implantEver': normalize_meta(row, 8, 'implantEver'),
-            'implantNow': normalize_meta(row, 9, 'implantNow'),
-            'bcHistory': normalize_meta(row, 10, 'bcHistory'),
-            'yearsSincePreviousBc': normalize_meta(row, 11, 'yearsSincePreviousBc'),
-            'previousBcLaterality': normalize_meta(row, 12, 'previousBcLaterality'),
-            'reduxHistory': normalize_meta(row, 13, 'reduxHistory'),
-            'reduxLaterality': normalize_meta(row, 14, 'reduxLaterality'),
-            'hrt': normalize_meta(row, 15, 'hrt'),
-            'antiestrogen': normalize_meta(row, 16, 'antiestrogen'),
-            'firstDegreeWithBc': normalize_meta(row, 17, 'firstDegreeWithBc'),
-            'firstDegreeWithBc50': normalize_meta(row, 18, 'firstDegreeWithBc50'),
-            'bmi': normalize_meta(row, 19, 'bmi'),
-            'race': normalize_meta(row, 20, 'race')
-        })
+        meta_key = '{}_{}'.format(dcm_subject_id, dcm_exam_index)
+        meta = metadata2numpy(metadata[meta_key])
         prediction = model.predict([data, meta])
         # collect predictions based on subjectId and laterality
         # to handle duplications
