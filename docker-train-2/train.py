@@ -24,7 +24,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, pre
 from datetime import datetime
 
 # training parameters
-NB_EPOCH = 5
+NB_EPOCH = 30
 EXTRACT_BATCH_SIZE = 1000
 TRAIN_BATCH_SIZE = 1000
 SMALL_EXTRACT_BATCH_SIZE = 50

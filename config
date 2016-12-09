@@ -11,7 +11,7 @@ trainname="vgg16"
 trainimage="${dockerurl}/${synapseid}/${trainname}"
 
 trainname2="vgg16-with-meta"
-trainimage2="${dockerurl}/${synapseid}/${trainname}"
+trainimage2="${dockerurl}/${synapseid}/${trainname2}"
 
 scorename="keras-score"
 scoreimage="${dockerurl}/${synapseid}/${scorename}"
