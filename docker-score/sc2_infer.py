@@ -16,9 +16,10 @@ PREDICTIONS_PATH = 'predictions.tsv'
 dcm_dir = sys.argv[1]
 scratch_dir = sys.argv[2]
 crosswalk_file = sys.argv[3]
-arch_file = sys.argv[4]
-weights_file = sys.argv[5]
-predictions_file = sys.argv[6] if len(sys.argv) > 6 else PREDICTIONS_PATH
+meta_file = sys.argv[4]
+arch_file = sys.argv[5]
+weights_file = sys.argv[6]
+predictions_file = sys.argv[7] if len(sys.argv) > 7 else PREDICTIONS_PATH
 
 print('Loading extractor and model')
 # feature extractor
