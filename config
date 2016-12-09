@@ -10,5 +10,8 @@ preprocessimage="${dockerurl}/${synapseid}/${preprocessname}"
 trainname="vgg16"
 trainimage="${dockerurl}/${synapseid}/${trainname}"
 
+trainname2="vgg16-with-meta"
+trainimage2="${dockerurl}/${synapseid}/${trainname}"
+
 scorename="keras-score"
 scoreimage="${dockerurl}/${synapseid}/${scorename}"
