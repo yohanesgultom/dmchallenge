@@ -8,6 +8,7 @@ import sys
 import os
 import csv
 from keras.models import model_from_json
+from keras.applications.vgg16 import VGG16
 from preprocess import preprocess_image, metadata2numpy, normalize_meta, parse_int, parse_float, EXPECTED_DIM, MAX_VALUE, FILTER_THRESHOLD
 
 PREDICTIONS_PATH = 'predictions.tsv'
@@ -15,26 +16,25 @@ PREDICTIONS_PATH = 'predictions.tsv'
 dcm_dir = sys.argv[1]
 scratch_dir = sys.argv[2]
 crosswalk_file = sys.argv[3]
-meta_file = sys.argv[4]
-arch_file = sys.argv[5]
-weights_file = sys.argv[6]
-predictions_file = sys.argv[7] if len(sys.argv) > 7 else PREDICTIONS_PATH
+arch_file = sys.argv[4]
+weights_file = sys.argv[5]
+predictions_file = sys.argv[6] if len(sys.argv) > 6 else PREDICTIONS_PATH
 
+print('Loading extractor and model')
+# feature extractor
+extractor = VGG16(weights='imagenet', include_top=False)
 # load model
-print('Loading model')
 with open(arch_file) as f:
     arch_json = f.read()
     model = model_from_json(arch_json)
 model.load_weights(weights_file)
 
-# predict images in crosswalk
-print('Predicting image by image and metadata')
-
+print('Predicting images one by one')
 metadata = {}
 predictions = {}
 prediction_index = []
 
-# read metadata
+# read exam metadata
 with open(meta_file, 'r') as metain:
     reader = csv.reader(metain, delimiter='\t')
     headers = next(reader, None)
@@ -60,21 +60,23 @@ with open(meta_file, 'r') as metain:
             'race': normalize_meta(row, 16, 'race')
         }
 
-# read images by crosswalk and make prediction
+# predict images in crosswalk
 with open(crosswalk_file, 'rb') as tsvin:
     crosswalk = csv.reader(tsvin, delimiter='\t')
     headers = next(crosswalk, None)
     count = 1
     for row in crosswalk:
-        # no exam id col for testing
         dcm_subject_id = row[0]
         dcm_exam_index = row[1]
         dcm_laterality = row[4]
         dcm_filename = row[5]
+        # extract features from image
         data = preprocess_image(os.path.join(dcm_dir, dcm_filename), dcm_laterality)
+        features = extractor.predict(data)
+        # get metadata features
         meta_key = '{}_{}'.format(dcm_subject_id, dcm_exam_index)
         meta = metadata2numpy(metadata[meta_key])
-        prediction = model.predict([data, meta])
+        prediction = model.predict([features, meta])
         # collect predictions based on subjectId and laterality
         # to handle duplications
         key = '{}_{}'.format(dcm_subject_id, dcm_laterality)
