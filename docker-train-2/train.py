@@ -150,6 +150,7 @@ if __name__ == '__main__':
 
     assert features_file.root.data.nrows == num_rows
     assert features_file.root.labels.nrows == dataset.labels.nrows
+    assert features_file.root.meta.nrows == dataset.meta.nrows
 
     # batch training
     print('Batch training')
