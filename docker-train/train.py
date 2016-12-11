@@ -25,7 +25,7 @@ from datetime import datetime
 # training parameters
 BIG_BATCH_SIZE = 1000  # batch size for data > NB_DATA_LIMIT
 SMALL_BATCH_SIZE = 40  # for data <= NB_DATA_LIMIT
-NB_EPOCH = 50
+NB_EPOCH = 70
 NB_DATA_LIMIT = 3000
 
 # global consts
@@ -97,9 +97,9 @@ if __name__ == '__main__':
     # this is the model we will train
     model = Sequential()
     model.add(Flatten(input_shape=FEATURES_DIM))
-    model.add(Dense(4096, activation='tanh'))
+    model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(4096, activation='tanh'))
+    model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid', init='uniform'))
 

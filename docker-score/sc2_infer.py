@@ -103,7 +103,8 @@ with open(predictions_file, 'wb') as csvfile:
         pred = predictions[key]
         # aggregation strategy
         # confidence = sum(pred['p']) / float(len(pred['p']))  # average
-        confidence = max(pred['p'])  # max
+        # confidence = max(pred['p'])  # max
+        confidence = pred['p'][0]  # first
         # confidence = pred['p'][-1]  # latest
         row = (pred['id'], pred['lat'], confidence)
         spamwriter.writerow(row)

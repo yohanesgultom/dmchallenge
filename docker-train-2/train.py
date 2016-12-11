@@ -24,7 +24,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, pre
 from datetime import datetime
 
 # training parameters
-NB_EPOCH = 30
+NB_EPOCH = 50
 EXTRACT_BATCH_SIZE = 1000
 TRAIN_BATCH_SIZE = 1000
 SMALL_EXTRACT_BATCH_SIZE = 50
@@ -109,9 +109,9 @@ if __name__ == '__main__':
 
     model = Sequential()
     model.add(Merge([vgg16_features, clinical_features], mode='concat'))
-    model.add(Dense(4096, activation='tanh'))
+    model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(4096, activation='tanh'))
+    model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid', init='uniform'))
 
