@@ -102,6 +102,7 @@ if __name__ == '__main__':
     extractor = VGG16(weights='imagenet', include_top=False)
 
     # this is the model we will train
+    print('Build model with dual input: image and clinical data')
     vgg16_features = Sequential()
     vgg16_features.add(Flatten(input_shape=FEATURES_DIM))
     clinical_features = Sequential()

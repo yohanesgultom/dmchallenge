@@ -1,2 +1,2 @@
 preprocessing=docker.synapse.org/syn7821845/simple-preprocess@sha256:9039b9cb98a015e7451e71cb535dcf741d0fc8f705b7ea1f47636074098ca0f6
-training=docker.synapse.org/syn7821845/vgg16-with-meta@sha256:fda1ca269c1bbfc219217d3fe8f253b9aec804785bd0f7515e14f4fefeb67958
+training=docker.synapse.org/syn7821845/vgg16-with-meta@sha256:cd14e553dea96beca773235c2c558cee19ab2a14552e4ebd05c7705ba726aa23
