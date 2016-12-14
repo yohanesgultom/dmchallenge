@@ -22,11 +22,11 @@ RUN conda install -y \
     h5py \
     pandas \
     scikit-learn \
-    theano \
     pytables \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade pip \
   && pip install --upgrade -I setuptools \
+  && pip install --upgrade --no-deps git+git://github.com/Theano/Theano.git \
   && pip install git+git://github.com/fchollet/keras.git
 
 # configure keras for Theano

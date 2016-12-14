@@ -145,8 +145,8 @@ sudo nvidia-docker run -it --rm --name score_sc1 \
 ```
 sudo nvidia-docker run -it --rm --name score_sc2 \
     -v ~/dmchallenge/pilot_images:/inferenceData:ro \
-    -v ~/dmchallenge/images_crosswalk_pilot_20160906_scoring.tsv:/metadata/images_crosswalk.tsv:ro \
-    -v ~/dmchallenge/exams_metadata_pilot_20160906.tsv:/metadata/exams_metadata.tsv:ro \
+    -v ~/dmchallenge/images_crosswalk_pilot_20160906_scoring_2.tsv:/metadata/images_crosswalk.tsv:ro \
+    -v ~/dmchallenge/exams_metadata_pilot_20160906_scoring_2.tsv:/metadata/exams_metadata.tsv:ro \
     -v ~/dmchallenge/modelState:/modelState:ro \
     -v ~/dmchallenge:/output:rw \
     -v ~/dmchallenge:/scratch:rw \
